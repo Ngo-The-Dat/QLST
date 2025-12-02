@@ -88,4 +88,3 @@ BEGIN TRY
     END CATCH
 END
 
-GO
