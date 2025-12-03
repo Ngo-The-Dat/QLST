@@ -202,10 +202,7 @@ CREATE TABLE CHITIETPHIEUNHAP
 	FOREIGN KEY(MAPN) REFERENCES PHIEUNHAPHANG(MAPN)
 )
 
-<<<<<<< HEAD
-=======
 GO
->>>>>>> main
 ----EXAMPLE DATA----
 -- 1. BẢNG NHANVIEN (Độc lập - Cần có nhân viên trước để quản lý các bảng khác)
 INSERT INTO NHANVIEN
