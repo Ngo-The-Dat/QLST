@@ -1,6 +1,8 @@
 ﻿USE MASTER
 GO
-IF EXISTS(SELECT * FROM SYS.DATABASES WHERE name = 'QLST')
+IF EXISTS(SELECT *
+FROM SYS.DATABASES
+WHERE name = 'QLST')
 BEGIN
 	ALTER DATABASE QLST SET SINGLE_USER WITH ROLLBACK IMMEDIATE
 	DROP DATABASE QLST
@@ -43,7 +45,7 @@ CREATE TABLE KH_THANHVIEN
 	MANV VARCHAR(10),
 	MACAPDO VARCHAR(10)
 
-	FOREIGN KEY(MAKH) REFERENCES KHACHHANG(MAKH),
+		FOREIGN KEY(MAKH) REFERENCES KHACHHANG(MAKH),
 	FOREIGN KEY(MANV) REFERENCES NHANVIEN(MANV),
 	FOREIGN KEY(MACAPDO) REFERENCES CAPDOTHE(MACAPDO),
 	CHECK(NGAYDANGKY > NGAYSINH)
@@ -54,9 +56,9 @@ CREATE TABLE PHIEUGIAMGIA
 	MAPG VARCHAR(10) PRIMARY KEY,
 	PHANTRAMGIAM FLOAT CHECK(PHANTRAMGIAM > 0),
 	TRANGTHAI NVARCHAR(10) NOT NULL CHECK(TRANGTHAI IN(N'Đã dùng', N'Chưa dùng')),
-	MAKH VARCHAR(10) 
+	MAKH VARCHAR(10)
 
-	FOREIGN KEY(MAKH) REFERENCES KH_THANHVIEN(MAKH)
+		FOREIGN KEY(MAKH) REFERENCES KH_THANHVIEN(MAKH)
 )
 
 CREATE TABLE SOTIENTIEU
@@ -65,8 +67,8 @@ CREATE TABLE SOTIENTIEU
 	NAM INT CHECK(NAM > 0),
 	SOTIENDATIEU INT CHECK(SOTIENDATIEU >= 0) DEFAULT 0
 
-	PRIMARY KEY(MAKH,NAM)
-	FOREIGN KEY(MAKH) REFERENCES KH_THANHVIEN(MAKH)
+		PRIMARY KEY(MAKH,NAM)
+		FOREIGN KEY(MAKH) REFERENCES KH_THANHVIEN(MAKH)
 )
 
 CREATE TABLE KHUYENMAI
@@ -77,7 +79,7 @@ CREATE TABLE KHUYENMAI
 	MANV VARCHAR(10),
 	ISMEMBER BIT
 
-	FOREIGN KEY (MANV) REFERENCES NHANVIEN(MANV),
+		FOREIGN KEY (MANV) REFERENCES NHANVIEN(MANV),
 	CHECK(NGAYKETTHUC >= NGAYBATDAU)
 )
 
@@ -86,8 +88,8 @@ CREATE TABLE MEMBER_SALE
 	MAKM VARCHAR(10),
 	MACAPDO VARCHAR(10)
 
-	PRIMARY KEY(MAKM, MACAPDO)
-	FOREIGN KEY(MAKM) REFERENCES KHUYENMAI(MAKM),
+		PRIMARY KEY(MAKM, MACAPDO)
+		FOREIGN KEY(MAKM) REFERENCES KHUYENMAI(MAKM),
 	FOREIGN KEY(MACAPDO) REFERENCES CAPDOTHE(MACAPDO)
 )
 
@@ -97,7 +99,7 @@ CREATE TABLE DANHMUC
 	CHUNGLOAI NVARCHAR(50) UNIQUE,
 	MANV VARCHAR(10)
 
-	FOREIGN KEY(MANV) REFERENCES NHANVIEN(MANV)
+		FOREIGN KEY(MANV) REFERENCES NHANVIEN(MANV)
 )
 
 CREATE TABLE NHASANXUAT
@@ -120,7 +122,7 @@ CREATE TABLE SANPHAM
 	MADM VARCHAR(10),
 	MANSX VARCHAR(10)
 
-	FOREIGN KEY(MADM) REFERENCES DANHMUC(MADM),
+		FOREIGN KEY(MADM) REFERENCES DANHMUC(MADM),
 	FOREIGN KEY(MANSX) REFERENCES NHASANXUAT(MANSX),
 	CHECK(TONKHO <= SOLUONGTOIDA)
 )
@@ -132,7 +134,7 @@ CREATE TABLE CHITIETKM
 	SOLUONG INT CHECK(SOLUONG > 0),
 	TILEGIAM FLOAT CHECK(TILEGIAM > 0 AND TILEGIAM <= 1)
 
-	PRIMARY KEY(MASP, MAKM),
+		PRIMARY KEY(MASP, MAKM),
 	FOREIGN KEY(MASP) REFERENCES SANPHAM(MASP),
 	FOREIGN KEY(MAKM) REFERENCES KHUYENMAI(MAKM)
 )
@@ -143,10 +145,10 @@ CREATE TABLE HOADON
 	NGAYLAP DATE DEFAULT GETDATE(),
 	TONGTIEN INT CHECK(TONGTIEN >= 0) DEFAULT 0,
 	MANV VARCHAR(10),
-	MAPG VARCHAR(10) NULL, 
+	MAPG VARCHAR(10) NULL,
 	MAKH VARCHAR(10)
 
-	FOREIGN KEY(MANV) REFERENCES NHANVIEN(MANV),
+		FOREIGN KEY(MANV) REFERENCES NHANVIEN(MANV),
 	FOREIGN KEY(MAPG) REFERENCES PHIEUGIAMGIA(MAPG),
 	FOREIGN KEY(MAKH) REFERENCES KHACHHANG(MAKH)
 )
@@ -159,8 +161,8 @@ CREATE TABLE CHITIETHOADON
 	THANHTIEN INT CHECK(THANHTIEN >= 0),
 	MAKM VARCHAR(10) NULL
 
-	PRIMARY KEY(MAHD, MASP)
-	FOREIGN KEY(MAHD) REFERENCES HOADON(MAHD),
+		PRIMARY KEY(MAHD, MASP)
+		FOREIGN KEY(MAHD) REFERENCES HOADON(MAHD),
 	FOREIGN KEY(MASP) REFERENCES SANPHAM(MASP),
 	FOREIGN KEY(MAKM) REFERENCES KHUYENMAI(MAKM)
 )
@@ -175,7 +177,7 @@ CREATE TABLE DONDATHANG
 	MANV VARCHAR(10),
 	MASP VARCHAR(10)
 
-	FOREIGN KEY(MANV) REFERENCES NHANVIEN(MANV),
+		FOREIGN KEY(MANV) REFERENCES NHANVIEN(MANV),
 	FOREIGN KEY(MASP) REFERENCES SANPHAM(MASP),
 	CHECK(SOLUONGDANHAN <= SOLUONGDAT)
 )
@@ -186,7 +188,7 @@ CREATE TABLE PHIEUNHAPHANG
 	NGAYNHAP DATE DEFAULT GETDATE(),
 	MANSX VARCHAR(10)
 
-	FOREIGN KEY(MANSX) REFERENCES NHASANXUAT(MANSX)
+		FOREIGN KEY(MANSX) REFERENCES NHASANXUAT(MANSX)
 )
 
 CREATE TABLE CHITIETPHIEUNHAP
@@ -195,52 +197,62 @@ CREATE TABLE CHITIETPHIEUNHAP
 	MAPN VARCHAR(10),
 	SLNHANTHUCTE INT CHECK(SLNHANTHUCTE > 0)
 
-	PRIMARY KEY(MAHD, MAPN)
-	FOREIGN KEY(MAHD) REFERENCES DONDATHANG(MAHD),
+		PRIMARY KEY(MAHD, MAPN)
+		FOREIGN KEY(MAHD) REFERENCES DONDATHANG(MAHD),
 	FOREIGN KEY(MAPN) REFERENCES PHIEUNHAPHANG(MAPN)
 )
 
-----EXAMPLE DATA----
+<<<<<<< HEAD
+=======
 GO
+>>>>>>> main
+----EXAMPLE DATA----
 -- 1. BẢNG NHANVIEN (Độc lập - Cần có nhân viên trước để quản lý các bảng khác)
-INSERT INTO NHANVIEN (MANV, HOTEN, VAITRO) VALUES
-('NV01', N'Nguyễn Minh Hoàng', N'Quản lý ngành hàng'),
-('NV02', N'Trần Tú', N'Quản lý kho hàng'),
-('NV03', N'Lê Văn Công', N'Kinh doanh'),
-('NV04', N'Phạm Thị Bảo Nhi', N'Chăm sóc khách hàng'),
-('NV05', N'Võ Quốc Lý', N'Xử lý đơn hàng'),
-('NV06', N'Hoàng Bảo', N'Quản lý ngành hàng'),
-('NV07', N'Phan Thị Dung', N'Chăm sóc khách hàng'),
-('NV08', N'Ngô Văn Hùng', N'Quản lý kho hàng'),
-('NV09', N'Bùi Minh Tú', N'Xử lý đơn hàng'),
-('NV10', N'Đặng Thị Hoa', N'Kinh doanh');
+INSERT INTO NHANVIEN
+	(MANV, HOTEN, VAITRO)
+VALUES
+	('NV01', N'Nguyễn Minh Hoàng', N'Quản lý ngành hàng'),
+	('NV02', N'Trần Tú', N'Quản lý kho hàng'),
+	('NV03', N'Lê Văn Công', N'Kinh doanh'),
+	('NV04', N'Phạm Thị Bảo Nhi', N'Chăm sóc khách hàng'),
+	('NV05', N'Võ Quốc Lý', N'Xử lý đơn hàng'),
+	('NV06', N'Hoàng Bảo', N'Quản lý ngành hàng'),
+	('NV07', N'Phan Thị Dung', N'Chăm sóc khách hàng'),
+	('NV08', N'Ngô Văn Hùng', N'Quản lý kho hàng'),
+	('NV09', N'Bùi Minh Tú', N'Xử lý đơn hàng'),
+	('NV10', N'Đặng Thị Hoa', N'Kinh doanh');
 GO
 
 -- 2. BẢNG KHACHHANG (Độc lập)
-INSERT INTO KHACHHANG (MAKH, HOTEN, SDT, DIACHI, ISTHANHVIEN) VALUES
-('KH01', N'Nguyễn Văn A', '0901234567', N'123 Lê Lợi, TP.HCM', 1),
-('KH02', N'Trần Thị B', '0909888777', N'456 Nguyễn Huệ, TP.HCM', 1),
-('KH03', N'Lê Văn C', '0912345678', N'789 Điện Biên Phủ, Hà Nội', 0), -- Khách vãng lai
-('KH04', N'Phạm Văn D', '0901111222', N'12 Trần Hưng Đạo, TP.HCM', 1),
-('KH05', N'Nguyễn Thị E', '0902222333', N'34 CMT8, TP.HCM', 1),
-('KH06', N'Trần Văn F', '0903333444', N'56 Lê Lợi, Đà Nẵng', 1),
-('KH07', N'Lê Thị G', '0904444555', N'78 Hai Bà Trưng, Hà Nội', 0),
-('KH08', N'Võ Văn H', '0905555666', N'90 Phan Đình Phùng, Huế', 1),
-('KH09', N'Ngô Thị I', '0906666777', N'11 Nguyễn Trãi, Hải Phòng', 1),
-('KH10', N'Bùi Văn K', '0907777888', N'22 Võ Văn Tần, TP.HCM', 1),
-('KH11', N'Đỗ Thị L', '0908888999', N'33 Trần Phú, Nha Trang', 0),
-('KH12', N'Tạ Văn M', '0910000111', N'44 Nguyễn Văn Cừ, Cần Thơ', 1),
-('KH13', N'Phùng Thị N', '0911111222', N'55 Ngô Quyền, Vinh', 1),
-('KH14', N'Hà Văn O', '0912222333', N'66 Lý Thường Kiệt, Quy Nhơn', 0),
-('KH15', N'Chu Thị P', '0913333444', N'77 Bà Triệu, Bắc Ninh', 1);
+INSERT INTO KHACHHANG
+	(MAKH, HOTEN, SDT, DIACHI, ISTHANHVIEN)
+VALUES
+	('KH01', N'Nguyễn Văn A', '0901234567', N'123 Lê Lợi, TP.HCM', 1),
+	('KH02', N'Trần Thị B', '0909888777', N'456 Nguyễn Huệ, TP.HCM', 1),
+	('KH03', N'Lê Văn C', '0912345678', N'789 Điện Biên Phủ, Hà Nội', 0),
+	-- Khách vãng lai
+	('KH04', N'Phạm Văn D', '0901111222', N'12 Trần Hưng Đạo, TP.HCM', 1),
+	('KH05', N'Nguyễn Thị E', '0902222333', N'34 CMT8, TP.HCM', 1),
+	('KH06', N'Trần Văn F', '0903333444', N'56 Lê Lợi, Đà Nẵng', 1),
+	('KH07', N'Lê Thị G', '0904444555', N'78 Hai Bà Trưng, Hà Nội', 0),
+	('KH08', N'Võ Văn H', '0905555666', N'90 Phan Đình Phùng, Huế', 1),
+	('KH09', N'Ngô Thị I', '0906666777', N'11 Nguyễn Trãi, Hải Phòng', 1),
+	('KH10', N'Bùi Văn K', '0907777888', N'22 Võ Văn Tần, TP.HCM', 1),
+	('KH11', N'Đỗ Thị L', '0908888999', N'33 Trần Phú, Nha Trang', 0),
+	('KH12', N'Tạ Văn M', '0910000111', N'44 Nguyễn Văn Cừ, Cần Thơ', 1),
+	('KH13', N'Phùng Thị N', '0911111222', N'55 Ngô Quyền, Vinh', 1),
+	('KH14', N'Hà Văn O', '0912222333', N'66 Lý Thường Kiệt, Quy Nhơn', 0),
+	('KH15', N'Chu Thị P', '0913333444', N'77 Bà Triệu, Bắc Ninh', 1);
 GO
 
 -- 3. BẢNG CAPDOTHE (Độc lập)
-INSERT INTO CAPDOTHE (MACAPDO, TENCAPDO, TONGTIENTOITHIEU, PHANTRAMGIAMSN) VALUES
-('LV1', N'Đồng', 0, 0),
-('LV2', N'Bạc', 10000000, 0.10),
-('LV3', N'Vàng', 30000000, 0.15),
-('LV4', N'Bạch kim', 50000000, 0.20);
+INSERT INTO CAPDOTHE
+	(MACAPDO, TENCAPDO, TONGTIENTOITHIEU, PHANTRAMGIAMSN)
+VALUES
+	('LV1', N'Đồng', 0, 0),
+	('LV2', N'Bạc', 10000000, 0.10),
+	('LV3', N'Vàng', 30000000, 0.15),
+	('LV4', N'Bạch kim', 50000000, 0.20);
 GO
 
 -- 4. BẢNG KH_THANHVIEN (Phụ thuộc: KHACHHANG, NHANVIEN, CAPDOTHE)
@@ -290,82 +302,93 @@ GO
 
 -- 7. BẢNG KHUYENMAI (Phụ thuộc: NHANVIEN)
 -- Lưu ý: Tạo khuyến mãi bao trùm thời điểm hiện tại để test Trigger tính tiền
-INSERT INTO KHUYENMAI (MAKM, NGAYBATDAU, NGAYKETTHUC, MANV, ISMEMBER) VALUES
-('KM01', '2024-01-01', '2024-02-28', 'NV01', 0),
-('KM02', '2024-03-01', '2024-12-31', 'NV01', 1),
-('KM03', '2024-06-01', '2024-12-31', 'NV01', 0),
-('KM04', '2024-11-01', '2025-03-31', 'NV02', 1),
-('KM05', '2024-12-01', '2025-06-30', 'NV03', 0),
-('KM06', '2025-01-15', '2025-04-15', 'NV03', 1),
-('KM07', '2024-11-15', '2025-01-15', 'NV01', 0),
-('KM08', '2024-10-01', '2025-01-31', 'NV02', 1),
-('KM09', '2024-12-20', '2025-02-28', 'NV04', 0),
-('KM10', '2025-02-01', '2025-05-31', 'NV05', 1),
-('KM11', '2024-05-01', '2024-12-31', 'NV01', 0),
-('KM12', '2024-09-01', '2025-03-31', 'NV02', 1),
-('KM13', '2024-11-20', '2025-02-20', 'NV03', 0),
-('KM14', '2024-12-25', '2025-01-10', 'NV04', 1),
-('KM15', '2025-01-01', '2025-12-31', 'NV05', 0),
-('KM16', '2024-07-01', '2024-12-31', 'NV06', 1),
-('KM17', '2025-03-01', '2025-08-31', 'NV07', 0),
-('KM18', '2024-11-01', '2025-06-30', 'NV08', 1),
-('KM19', '2024-12-15', '2025-01-31', 'NV09', 0),
-('KM20', '2025-01-10', '2025-04-10', 'NV10', 1),
-('KM21', '2024-08-01', '2025-01-15', 'NV01', 0),
-('KM22', '2024-11-10', '2025-03-10', 'NV02', 1),
-('KM23', '2024-12-05', '2025-02-28', 'NV03', 0),
-('KM24', '2024-12-01', '2025-01-31', 'NV04', 1),
-('KM25', '2025-02-14', '2025-03-14', 'NV05', 0),
-('KM26', '2024-10-15', '2025-04-15', 'NV06', 1),
-('KM27', '2024-11-25', '2025-05-25', 'NV07', 0),
-('KM28', '2024-12-20', '2025-06-20', 'NV08', 1),
-('KM29', '2025-03-15', '2025-09-15', 'NV09', 0),
-('KM30', '2025-04-01', '2025-12-31', 'NV10', 1);
+INSERT INTO KHUYENMAI
+	(MAKM, NGAYBATDAU, NGAYKETTHUC, MANV, ISMEMBER)
+VALUES
+	('KM01', '2024-01-01', '2024-02-28', 'NV01', 0),
+	('KM02', '2024-03-01', '2024-12-31', 'NV01', 1),
+	('KM03', '2024-06-01', '2024-12-31', 'NV01', 0),
+	('KM04', '2024-11-01', '2025-03-31', 'NV02', 1),
+	('KM05', '2024-12-01', '2025-06-30', 'NV03', 0),
+	('KM06', '2025-01-15', '2025-04-15', 'NV03', 1),
+	('KM07', '2024-11-15', '2025-01-15', 'NV01', 0),
+	('KM08', '2024-10-01', '2025-01-31', 'NV02', 1),
+	('KM09', '2024-12-20', '2025-02-28', 'NV04', 0),
+	('KM10', '2025-02-01', '2025-05-31', 'NV05', 1),
+	('KM11', '2024-05-01', '2024-12-31', 'NV01', 0),
+	('KM12', '2024-09-01', '2025-03-31', 'NV02', 1),
+	('KM13', '2024-11-20', '2025-02-20', 'NV03', 0),
+	('KM14', '2024-12-25', '2025-01-10', 'NV04', 1),
+	('KM15', '2025-01-01', '2025-12-31', 'NV05', 0),
+	('KM16', '2024-07-01', '2024-12-31', 'NV06', 1),
+	('KM17', '2025-03-01', '2025-08-31', 'NV07', 0),
+	('KM18', '2024-11-01', '2025-06-30', 'NV08', 1),
+	('KM19', '2024-12-15', '2025-01-31', 'NV09', 0),
+	('KM20', '2025-01-10', '2025-04-10', 'NV10', 1),
+	('KM21', '2024-08-01', '2025-01-15', 'NV01', 0),
+	('KM22', '2024-11-10', '2025-03-10', 'NV02', 1),
+	('KM23', '2024-12-05', '2025-02-28', 'NV03', 0),
+	('KM24', '2024-12-01', '2025-01-31', 'NV04', 1),
+	('KM25', '2025-02-14', '2025-03-14', 'NV05', 0),
+	('KM26', '2024-10-15', '2025-04-15', 'NV06', 1),
+	('KM27', '2024-11-25', '2025-05-25', 'NV07', 0),
+	('KM28', '2024-12-20', '2025-06-20', 'NV08', 1),
+	('KM29', '2025-03-15', '2025-09-15', 'NV09', 0),
+	('KM30', '2025-04-01', '2025-12-31', 'NV10', 1);
 GO
 
 -- 8. BẢNG MEMBER_SALE (Phụ thuộc: KHUYENMAI, CAPDOTHE)
-INSERT INTO MEMBER_SALE (MAKM, MACAPDO) VALUES
-('KM02', 'LV2'), ('KM02', 'LV3'),
-('KM04', 'LV3'), ('KM04', 'LV4'),
-('KM08', 'LV4'),  
-('KM12', 'LV2'), ('KM12', 'LV3'),
-('KM14', 'LV3'),
-('KM16', 'LV2'),
-('KM18', 'LV4'),
-('KM20', 'LV1'),
-('KM22', 'LV3'),
-('KM24', 'LV2'),
-('KM26', 'LV4'),
-('KM28', 'LV3'),
-('KM30', 'LV4');
+INSERT INTO MEMBER_SALE
+	(MAKM, MACAPDO)
+VALUES
+	('KM02', 'LV2'),
+	('KM02', 'LV3'),
+	('KM04', 'LV3'),
+	('KM04', 'LV4'),
+	('KM08', 'LV4'),
+	('KM12', 'LV2'),
+	('KM12', 'LV3'),
+	('KM14', 'LV3'),
+	('KM16', 'LV2'),
+	('KM18', 'LV4'),
+	('KM20', 'LV1'),
+	('KM22', 'LV3'),
+	('KM24', 'LV2'),
+	('KM26', 'LV4'),
+	('KM28', 'LV3'),
+	('KM30', 'LV4');
 GO
 
 -- 9. BẢNG DANHMUC (Phụ thuộc: NHANVIEN)
-INSERT INTO DANHMUC (MADM, CHUNGLOAI, MANV) VALUES
-('DM01', N'Thực phẩm', 'NV01'),
-('DM02', N'Đồ gia dụng', 'NV01'),
-('DM03', N'Đồ điện tử', 'NV01'),
-('DM04', N'Đồ chơi trẻ em', 'NV01'),
-('DM05', N'Mỹ phẩm', 'NV01'),
-('DM06', N'Đồ gia dụng nhỏ', 'NV10'),
-('DM07', N'Thực phẩm đóng gói', 'NV06'),
-('DM08', N'Sữa & Đồ uống', 'NV06'),
-('DM09', N'Sản phẩm chăm sóc cá nhân', 'NV07'),
-('DM10', N'Văn phòng phẩm', 'NV08');
+INSERT INTO DANHMUC
+	(MADM, CHUNGLOAI, MANV)
+VALUES
+	('DM01', N'Thực phẩm', 'NV01'),
+	('DM02', N'Đồ gia dụng', 'NV01'),
+	('DM03', N'Đồ điện tử', 'NV01'),
+	('DM04', N'Đồ chơi trẻ em', 'NV01'),
+	('DM05', N'Mỹ phẩm', 'NV01'),
+	('DM06', N'Đồ gia dụng nhỏ', 'NV10'),
+	('DM07', N'Thực phẩm đóng gói', 'NV06'),
+	('DM08', N'Sữa & Đồ uống', 'NV06'),
+	('DM09', N'Sản phẩm chăm sóc cá nhân', 'NV07'),
+	('DM10', N'Văn phòng phẩm', 'NV08');
 GO
 
 -- 10. BẢNG NHASANXUAT (Độc lập)
-INSERT INTO NHASANXUAT (MANSX, TENNSX, DIACHI, EMAIL, SDT) VALUES
-('NSX01', N'Vinamilk', N'Q7, TP.HCM', 'contact@vinamilk.com', '0285415555'),
-('NSX02', N'Sunhouse', N'Hà Nội', 'contact@sunhouse.com', '18006680'),
-('NSX03', N'ABC Foods', N'Q1 TP.HCM', 'contact@abcfoods.com', '0281234003'),
-('NSX04', N'Happy Home', N'Hà Nội', 'sales@happyhome.vn', '0241234004'),
-('NSX05', N'FreshFarm', N'Đà Nẵng', 'info@freshfarm.vn', '0236123405'),
-('NSX06', N'CookWell', N'Hải Phòng', 'hello@cookwell.vn', '0225123406'),
-('NSX07', N'KitchenPro', N'Hà Nội', 'support@kitchenpro.vn', '0246234007'),
-('NSX08', N'GreenLife', N'TP.HCM', 'contact@greenlife.vn', '0286344008'),
-('NSX09', N'MiniGoods', N'Vinh', 'info@minigoods.vn', '0238123409'),
-('NSX10', N'SUNNY Tech', N'Bắc Ninh', 'hello@sunnytech.vn', '0228123410');
+INSERT INTO NHASANXUAT
+	(MANSX, TENNSX, DIACHI, EMAIL, SDT)
+VALUES
+	('NSX01', N'Vinamilk', N'Q7, TP.HCM', 'contact@vinamilk.com', '0285415555'),
+	('NSX02', N'Sunhouse', N'Hà Nội', 'contact@sunhouse.com', '18006680'),
+	('NSX03', N'ABC Foods', N'Q1 TP.HCM', 'contact@abcfoods.com', '0281234003'),
+	('NSX04', N'Happy Home', N'Hà Nội', 'sales@happyhome.vn', '0241234004'),
+	('NSX05', N'FreshFarm', N'Đà Nẵng', 'info@freshfarm.vn', '0236123405'),
+	('NSX06', N'CookWell', N'Hải Phòng', 'hello@cookwell.vn', '0225123406'),
+	('NSX07', N'KitchenPro', N'Hà Nội', 'support@kitchenpro.vn', '0246234007'),
+	('NSX08', N'GreenLife', N'TP.HCM', 'contact@greenlife.vn', '0286344008'),
+	('NSX09', N'MiniGoods', N'Vinh', 'info@minigoods.vn', '0238123409'),
+	('NSX10', N'SUNNY Tech', N'Bắc Ninh', 'hello@sunnytech.vn', '0228123410');
 GO
 
 -- 11. BẢNG SANPHAM (Phụ thuộc: DANHMUC, NHASANXUAT)
@@ -476,31 +499,36 @@ INSERT INTO DONDATHANG (MAHD, NGAYLAP, SOLUONGDAT, SOLUONGDANHAN, TRANGTHAI, MAN
 GO
 
 -- 14. BẢNG PHIEUNHAPHANG (Phụ thuộc: NHASANXUAT)
-INSERT INTO PHIEUNHAPHANG (MAPN, NGAYNHAP, MANSX) VALUES
-('PN01', '2024-05-05', 'NSX01'),
-('PN02', '2024-07-05', 'NSX03'),
-('PN03', '2024-08-02', 'NSX04'),
-('PN04', '2024-08-12', 'NSX05'),
-('PN05', '2024-09-02', 'NSX06'),
-('PN06', '2024-09-12', 'NSX07'),
-('PN07', '2024-10-05', 'NSX08'),
-('PN08', '2024-10-15', 'NSX09'),
-('PN09', '2024-11-02', 'NSX10'),
-('PN10', '2024-11-20', 'NSX03');
+INSERT INTO PHIEUNHAPHANG
+	(MAPN, NGAYNHAP, MANSX)
+VALUES
+	('PN01', '2024-05-05', 'NSX01'),
+	('PN02', '2024-07-05', 'NSX03'),
+	('PN03', '2024-08-02', 'NSX04'),
+	('PN04', '2024-08-12', 'NSX05'),
+	('PN05', '2024-09-02', 'NSX06'),
+	('PN06', '2024-09-12', 'NSX07'),
+	('PN07', '2024-10-05', 'NSX08'),
+	('PN08', '2024-10-15', 'NSX09'),
+	('PN09', '2024-11-02', 'NSX10'),
+	('PN10', '2024-11-20', 'NSX03');
 GO
 
 -- 15. BẢNG CHITIETPHIEUNHAP (Phụ thuộc: DONDATHANG, PHIEUNHAPHANG)
-INSERT INTO CHITIETPHIEUNHAP (MAHD, MAPN, SLNHANTHUCTE) VALUES
-('DDH01', 'PN01', 200), -- Nhập hàng cho đơn DDH01
-('DDH03', 'PN02', 100),
-('DDH04', 'PN02', 50),
-('DDH05', 'PN03', 200),
-('DDH06', 'PN04', 80),
-('DDH07', 'PN05', 150),
-('DDH08', 'PN06', 30),
-('DDH09', 'PN07', 120),
-('DDH10', 'PN08', 60),
-('DDH11', 'PN09', 60);
+INSERT INTO CHITIETPHIEUNHAP
+	(MAHD, MAPN, SLNHANTHUCTE)
+VALUES
+	('DDH01', 'PN01', 200),
+	-- Nhập hàng cho đơn DDH01
+	('DDH03', 'PN02', 100),
+	('DDH04', 'PN02', 50),
+	('DDH05', 'PN03', 200),
+	('DDH06', 'PN04', 80),
+	('DDH07', 'PN05', 150),
+	('DDH08', 'PN06', 30),
+	('DDH09', 'PN07', 120),
+	('DDH10', 'PN08', 60),
+	('DDH11', 'PN09', 60);
 GO
 
 -- 16. BẢNG HOADON (Phụ thuộc: NHANVIEN, PHIEUGIAMGIA, KHACHHANG)
@@ -575,6 +603,11 @@ INSERT INTO CHITIETHOADON (MAHD, MASP, SOLUONG, THANHTIEN, MAKM) VALUES
 GO
 
 -- Kiểm tra kết quả
-SELECT * FROM HOADON;        -- Kiểm tra xem TONGTIEN đã tự nhảy số chưa
-SELECT * FROM CHITIETHOADON; -- Kiểm tra xem THANHTIEN đã tính đúng chưa
-SELECT * FROM SANPHAM;       -- Kiểm tra xem TONKHO đã bị trừ chưa (SP01 từ 100 còn 95)
+SELECT *
+FROM HOADON;
+-- Kiểm tra xem TONGTIEN đã tự nhảy số chưa
+SELECT *
+FROM CHITIETHOADON;
+-- Kiểm tra xem THANHTIEN đã tính đúng chưa
+SELECT *
+FROM SANPHAM;       -- Kiểm tra xem TONKHO đã bị trừ chưa (SP01 từ 100 còn 95)
