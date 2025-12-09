@@ -1,15 +1,21 @@
-drop procedure if exists USP_CANCEL_ORDER
+USE QLST
 GO
-create procedure USP_CANCEL_ORDER @mahd varchar(10)
+
+ALTER PROCEDURE USP_CANCEL_ORDER_WAIT
+    @mahd varchar(10)
 AS
 BEGIN
-    if not exists (select 1 from hoadon where  mahd = @mahd)
+    SET NOCOUNT ON;
+
+    -- Kiểm tra tồn tại
+    IF NOT EXISTS (SELECT 1 FROM HOADON WHERE MAHD = @mahd)
     BEGIN
-        print N'Hóa đon không tồn tại'
+        PRINT N'Hóa đơn không tồn tại'
         RETURN
     END
-    begin try
-    begin TRANSACTION
+
+    BEGIN TRY
+        BEGIN TRANSACTION
         DECLARE @cur_masp varchar(10)
         DECLARE @cur_soluong int 
         DECLARE @cur_makm varchar(10)
@@ -17,61 +23,155 @@ BEGIN
         DECLARE @tongtien INT
         DECLARE @mapg varchar(10)
         DECLARE @nam_hoadon INT
-        SELECT @makh = MAKH, 
-               @tongtien = TONGTIEN, 
-               @mapg = MAPG,
-               @nam_hoadon = YEAR(NGAYLAP)
-        FROM HOADON 
-        WHERE MAHD = @mahd
-               -- cap nhat lai chi tieu khach hang
-        IF @makh IS NOT NULL AND @tongtien > 0
-        BEGIN
-            UPDATE SOTIENTIEU
-            SET SOTIENDATIEU = SOTIENDATIEU - @tongtien
-            WHERE MAKH = @makh AND NAM = @nam_hoadon;
-        END
-                -- neu khach hang su dung ma giam gia cho don nay phai hoan lai 
+
+        SELECT @makh = MAKH, @tongtien = TONGTIEN, @mapg = MAPG, @nam_hoadon = YEAR(NGAYLAP)
+        FROM HOADON WHERE MAHD = @mahd
+
         IF @mapg IS NOT NULL
         BEGIN
             UPDATE PHIEUGIAMGIA
             SET TRANGTHAI = N'Chưa dùng'
             WHERE MAPG = @mapg;
         END
-        DECLARE cur_chitietdon CURSOR FOR 
+
+        DECLARE cur_chitietdon CURSOR LOCAL FOR 
             SELECT MASP, SOLUONG, MAKM FROM CHITIETHOADON WHERE MAHD = @mahd;
+        
         OPEN cur_chitietdon
         FETCH NEXT FROM cur_chitietdon INTO @cur_masp, @cur_soluong, @cur_makm
+
         WHILE @@FETCH_STATUS = 0
         BEGIN
             IF @cur_makm IS NOT NULL
             BEGIN
-                -- chỉ tối đa có 3 sản phẩm khuyến mãi
-                if @cur_soluong > 3 
-                BEGIN 
-                    UPDATE CHITIETKM 
-                    SET SOLUONG = SOLUONG + 3
-                    WHERE MAKM = @cur_makm AND MASP = @cur_masp;
-                end
-                else
-                begin
-                    UPDATE CHITIETKM 
-                    SET SOLUONG = SOLUONG + @cur_soluong
-                    WHERE MAKM = @cur_makm AND MASP = @cur_masp;
-                end
+                DECLARE @Sl_Hoan_KM INT;
+                IF @cur_soluong > 3 SET @Sl_Hoan_KM = 3; ELSE SET @Sl_Hoan_KM = @cur_soluong;
+
+                UPDATE CHITIETKM 
+                SET SOLUONG = SOLUONG + @Sl_Hoan_KM
+                WHERE MAKM = @cur_makm AND MASP = @cur_masp;
             END
+
             DELETE FROM CHITIETHOADON 
             WHERE MAHD = @mahd AND MASP = @cur_masp;
-
-           UPDATE SANPHAM
-           SET TONKHO = TONKHO + @cur_soluong
-           WHERE MASP = @cur_masp;
-           DELETE FROM HOADON WHERE MAHD = @mahd;           
-            FETCH NEXT FROM cur_chitietdon INTO @cur_masp, @cur_soluong
+            declare @SL_tonkho_hientai int
+            declare @sl_tonkho_toida int
+            select @sl_tonkho_hientai = tonkho, @sl_tonkho_toida = SOLUONGTOIDA from sanpham where masp = @cur_masp
+            declare @SL_tonkho_saucapnhat int 
+            set @SL_tonkho_saucapnhat = @sl_tonkho_hientai  + @cur_soluong
+            if @SL_tonkho_saucapnhat > @sl_tonkho_toida 
+            BEGIN
+                ROLLBACK tran
+                return
+            end
+            WAITFOR DELAY '00:00:05'
+            UPDATE SANPHAM 
+            SET TONKHO = @SL_tonkho_saucapnhat
+            WHERE MASP = @cur_masp;
+            FETCH NEXT FROM cur_chitietdon INTO @cur_masp, @cur_soluong, @cur_makm
         END
-    commit transaction
-    end TRY
-    begin catch
+        
+        CLOSE cur_chitietdon
+        DEALLOCATE cur_chitietdon
+        DELETE FROM HOADON WHERE MAHD = @mahd; 
 
-    end catch
-end
-go
+        COMMIT TRANSACTION
+        PRINT N'Hủy đơn hàng thành công.'
+    END TRY
+    BEGIN CATCH
+        -- Rollback nếu có lỗi
+        IF @@TRANCOUNT > 0 
+        BEGIN
+            ROLLBACK TRANSACTION;
+        END
+        
+        DECLARE @ErrMsg NVARCHAR(4000) = ERROR_MESSAGE();
+        RAISERROR(@ErrMsg, 16, 1);
+    END CATCH
+END
+GO
+CREATE OR ALTER PROCEDURE USP_CANCEL_ORDER 
+    @mahd varchar(10)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Kiểm tra tồn tại
+    IF NOT EXISTS (SELECT 1 FROM HOADON WHERE MAHD = @mahd)
+    BEGIN
+        PRINT N'Hóa đơn không tồn tại'
+        RETURN
+    END
+
+    BEGIN TRY
+        BEGIN TRANSACTION
+        DECLARE @cur_masp varchar(10)
+        DECLARE @cur_soluong int 
+        DECLARE @cur_makm varchar(10)
+        DECLARE @makh varchar(10)
+        DECLARE @mapg varchar(10)
+        DECLARE @nam_hoadon INT
+
+        SELECT @makh = MAKH, @mapg = MAPG, @nam_hoadon = YEAR(NGAYLAP)
+        FROM HOADON WHERE MAHD = @mahd
+
+        IF @mapg IS NOT NULL
+        BEGIN
+            UPDATE PHIEUGIAMGIA
+            SET TRANGTHAI = N'Chưa dùng'
+            WHERE MAPG = @mapg;
+        END
+
+        DECLARE cur_chitietdon CURSOR LOCAL FOR 
+            SELECT MASP, SOLUONG, MAKM FROM CHITIETHOADON WHERE MAHD = @mahd;
+        
+        OPEN cur_chitietdon
+        FETCH NEXT FROM cur_chitietdon INTO @cur_masp, @cur_soluong, @cur_makm
+
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+            IF @cur_makm IS NOT NULL
+            BEGIN
+                DECLARE @Sl_Hoan_KM INT;
+                IF @cur_soluong > 3 SET @Sl_Hoan_KM = 3; ELSE SET @Sl_Hoan_KM = @cur_soluong;
+
+                UPDATE CHITIETKM 
+                SET SOLUONG = SOLUONG + @Sl_Hoan_KM
+                WHERE MAKM = @cur_makm AND MASP = @cur_masp;
+            END
+            declare @SL_tonkho_hientai int
+            declare @sl_tonkho_toida int
+            select @sl_tonkho_hientai = tonkho, @sl_tonkho_toida = SOLUONGTOIDA from sanpham with(HOLDLOCK) where masp = @cur_masp
+            declare @SL_tonkho_saucapnhat int 
+            set @SL_tonkho_saucapnhat = @sl_tonkho_hientai  + @cur_soluong
+            if @SL_tonkho_saucapnhat > @sl_tonkho_toida 
+            BEGIN
+                ROLLBACK tran
+                return
+            end
+            UPDATE SANPHAM 
+            SET TONKHO = @SL_tonkho_saucapnhat
+            WHERE MASP = @cur_masp;
+            DELETE FROM CHITIETHOADON 
+            WHERE MAHD = @mahd AND MASP = @cur_masp;
+            FETCH NEXT FROM cur_chitietdon INTO @cur_masp, @cur_soluong, @cur_makm
+        END
+        
+        CLOSE cur_chitietdon
+        DEALLOCATE cur_chitietdon
+        DELETE FROM HOADON WHERE MAHD = @mahd; 
+
+        COMMIT TRANSACTION
+        PRINT N'Hủy đơn hàng thành công.'
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 
+        BEGIN
+            ROLLBACK TRANSACTION;
+        END
+        
+        DECLARE @ErrMsg NVARCHAR(4000) = ERROR_MESSAGE();
+        RAISERROR(@ErrMsg, 16, 1);
+    END CATCH
+END
+GO
