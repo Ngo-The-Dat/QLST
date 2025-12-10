@@ -201,10 +201,95 @@ CREATE TABLE CHITIETPHIEUNHAP
 		FOREIGN KEY(MAHD) REFERENCES DONDATHANG(MAHD),
 	FOREIGN KEY(MAPN) REFERENCES PHIEUNHAPHANG(MAPN)
 )
+----TRIGGER----
+-- GO
+-- CREATE OR ALTER TRIGGER CACULATE_THANHTIEN_TONGTIEN
+-- ON CHITIETHOADON
+-- AFTER INSERT, UPDATE, DELETE
+-- AS
+-- BEGIN
+-- 	IF EXISTS(SELECT 1 FROM inserted)
+-- 	BEGIN
+-- 	UPDATE CTHD
+-- 		SET THANHTIEN = S.DONGIA * I.SOLUONG * (1 - ISNULL(CTKM.TILEGIAM, 0))
+-- 		FROM CHITIETHOADON CTHD
+-- 		JOIN inserted I ON CTHD.MAHD = I.MAHD AND I.MASP = CTHD.MASP
+-- 		JOIN SANPHAM S ON I.MASP = S.MASP 
+-- 		JOIN HOADON HD ON HD.MAHD = I.MAHD
+-- 		LEFT JOIN CHITIETKM CTKM ON CTKM.MAKM = I.MAKM AND CTKM.MASP = S.MASP
+-- 		LEFT JOIN KHUYENMAI KM ON KM.MAKM = CTKM.MAKM AND (HD.NGAYLAP BETWEEN KM.NGAYBATDAU AND KM.NGAYKETTHUC)
 
-GO
+-- 	END
+
+-- 	DECLARE @DanhSachHD_ThayDoi TABLE (MAHD VARCHAR(10))
+-- 	INSERT INTO @DanhSachHD_ThayDoi (MAHD)
+-- 	SELECT MAHD FROM inserted
+-- 	UNION
+-- 	SELECT MAHD FROM deleted
+
+-- 	UPDATE HD
+-- 	SET HD.TONGTIEN = (
+-- 		SELECT ISNULL(SUM(CTHD.THANHTIEN), 0)
+-- 		FROM CHITIETHOADON CTHD
+-- 		WHERE CTHD.MAHD = HD.MAHD
+-- 	)
+-- 	FROM HOADON HD
+-- 	JOIN @DanhSachHD_ThayDoi DS ON HD.MAHD = DS.MAHD
+-- END
+
+-- GO
+-- CREATE OR ALTER TRIGGER TRG_CAPNHAT_DONDATHANG_TU_PHIEUNHAP
+-- ON CHITIETPHIEUNHAP
+-- AFTER INSERT
+-- AS
+-- BEGIN
+-- 	UPDATE DDH
+-- 	SET DDH.SOLUONGDANHAN += I.SLNHANTHUCTE
+-- 	FROM DONDATHANG DDH
+-- 	JOIN inserted I ON DDH.MAHD = I.MAHD
+
+-- 	UPDATE DONDATHANG
+-- 	SET TRANGTHAI = CASE
+-- 		WHEN SOLUONGDANHAN >= SOLUONGDAT THEN N'Đã giao đủ'
+-- 		WHEN SOLUONGDANHAN > 0 THEN N'Đã giao một phần'
+-- 		ELSE N'Chưa giao'
+-- 	END
+-- 	WHERE MAHD IN(SELECT MAHD FROM inserted)
+-- END
+-- GO
+-- CREATE OR ALTER TRIGGER TRG_QUANLY_TONKHO_FULL
+-- ON CHITIETHOADON
+-- AFTER INSERT, UPDATE, DELETE
+-- AS
+-- BEGIN
+-- 	IF EXISTS(
+-- 		SELECT 1
+-- 		FROM inserted I
+-- 		LEFT JOIN deleted D ON I.MASP = D.MASP
+-- 		JOIN SANPHAM SP ON I.MASP = SP.MASP AND SP.TONKHO < (I.SOLUONG - ISNULL(D.SOLUONG, 0))
+-- 	)
+-- 	BEGIN
+-- 		RAISERROR(N'Lỗi: Số lượng tồn kho không đủ để thực hiện giao dịch!', 16, 1)
+--         ROLLBACK TRANSACTION
+--         RETURN
+-- 	END
+
+-- 	DECLARE @ThayDoiKho TABLE (MASP VARCHAR(10), SOLUONGTHAYDOI INT)
+
+-- 	INSERT INTO @ThayDoiKho(MASP,SOLUONGTHAYDOI)
+-- 	SELECT COALESCE(I.MASP, D.MASP), (ISNULL(I.SOLUONG, 0) - ISNULL(D.SOLUONG,0))
+-- 	FROM inserted I
+-- 	FULL OUTER JOIN deleted D ON I.MAHD = D.MAHD AND I.MASP = D.MASP
+
+-- 	UPDATE SP
+-- 	SET SP.TONKHO -= T.SOLUONGTHAYDOI
+-- 	FROM SANPHAM SP
+-- 	JOIN @ThayDoiKho T ON T.MASP = SP.MASP
+-- 	WHERE T.SOLUONGTHAYDOI <> 0
+-- END
 ----EXAMPLE DATA----
 -- 1. BẢNG NHANVIEN (Độc lập - Cần có nhân viên trước để quản lý các bảng khác)
+
 INSERT INTO NHANVIEN
 	(MANV, HOTEN, VAITRO)
 VALUES
@@ -266,7 +351,7 @@ VALUES
 	('KH09', '2023-06-06', '1990-10-10', 'NV09', 'LV1'),
 	('KH10', '2024-02-14', '1993-02-14', 'NV10', 'LV3'),
 	('KH12', '2023-11-11', '1985-11-11', 'NV06', 'LV4'),
-	('KH13', '2025-01-01', '1996-01-01', 'NV06', 'LV1');
+	('KH13', '2024-01-01', '1996-01-01', 'NV06', 'LV1'); -- sửa lại thành 2024 vì trong số tiền tiêu, khách hàng 13 năm 2024 là 4 tr đồng
 GO
 
 -- 5. BẢNG PHIEUGIAMGIA (Phụ thuộc: KH_THANHVIEN)
@@ -275,9 +360,9 @@ INSERT INTO PHIEUGIAMGIA
 VALUES
 	('PG01', 0.10, N'Chưa dùng', 'KH01'),
 	('PG02', 0.20, N'Đã dùng', 'KH02'),
-	('PG03', 0.05, N'Chưa dùng', 'KH04'),
+	('PG03', 0.05, N'Đã dùng', 'KH04'), -- Dùng ở HD02 rồi
 	('PG04', 0.10, N'Chưa dùng', 'KH05'),
-	('PG05', 0.15, N'Chưa dùng', 'KH06'),
+	('PG05', 0.15, N'Đã dùng', 'KH06'), -- Đã dùng ở HD05
 	('PG06', 0.20, N'Chưa dùng', 'KH08'),
 	('PG07', 0.05, N'Đã dùng', 'KH09'),
 	('PG08', 0.10, N'Chưa dùng', 'KH10'),
@@ -317,7 +402,7 @@ INSERT INTO KHUYENMAI
 	(MAKM, NGAYBATDAU, NGAYKETTHUC, MANV, ISMEMBER)
 VALUES
 	('KM01', '2024-01-01', '2024-02-28', 'NV01', 0),
-	('KM02', '2024-03-01', '2024-12-31', 'NV01', 1),
+	('KM02', '2024-03-01', '2026-12-31', 'NV01', 1), -- kéo dài ngày kết thúc do demo hóa đơn xài getdate()
 	('KM03', '2024-06-01', '2024-12-31', 'NV01', 0),
 	('KM04', '2024-11-01', '2025-03-31', 'NV02', 1),
 	('KM05', '2024-12-01', '2025-06-30', 'NV03', 0),
@@ -352,13 +437,10 @@ GO
 INSERT INTO MEMBER_SALE
 	(MAKM, MACAPDO)
 VALUES
-	('KM02', 'LV2'),
-	('KM02', 'LV3'),
-	('KM04', 'LV3'),
-	('KM04', 'LV4'),
+	('KM02', 'LV2'), ('KM02', 'LV3'),
+	('KM04', 'LV3'), ('KM04', 'LV4'),
 	('KM08', 'LV4'),
-	('KM12', 'LV2'),
-	('KM12', 'LV3'),
+	('KM12', 'LV2'), ('KM12', 'LV3'),
 	('KM14', 'LV3'),
 	('KM16', 'LV2'),
 	('KM18', 'LV4'),
@@ -522,17 +604,17 @@ GO
 INSERT INTO DONDATHANG
 	(MAHD, NGAYLAP, SOLUONGDAT, SOLUONGDANHAN, TRANGTHAI, MANV, MASP)
 VALUES
-	('DDH01', '2024-05-01', 200, 0, N'Chưa giao', 'NV02', 'SP01'),
+	('DDH01', '2024-05-01', 200, 200, N'Đã giao đủ', 'NV02', 'SP01'), -- PN01
 	('DDH02', '2024-06-01', 100, 0, N'Chưa giao', 'NV02', 'SP02'),
-	('DDH03', '2024-07-01', 100, 0, N'Chưa giao', 'NV02', 'SP03'),
-	('DDH04', '2024-07-05', 50, 0, N'Chưa giao', 'NV02', 'SP04'),
+	('DDH03', '2024-07-01', 100, 100, N'Đã giao đủ', 'NV02', 'SP03'), -- PN02
+	('DDH04', '2024-07-05', 50, 50, N'Đã giao đủ', 'NV02', 'SP04'), -- PN04
 	('DDH05', '2024-08-01', 200, 200, N'Đã giao đủ', 'NV02', 'SP05'),
 	('DDH06', '2024-08-10', 80, 20, N'Đã giao một phần', 'NV02', 'SP06'),
-	('DDH07', '2024-09-01', 150, 0, N'Chưa giao', 'NV02', 'SP07'),
+	('DDH07', '2024-09-01', 150, 150, N'Đã giao đủ', 'NV02', 'SP07'),      -- Fix: Đã nhập đủ ở PN05	
 	('DDH08', '2024-09-10', 30, 30, N'Đã giao đủ', 'NV02', 'SP08'),
-	('DDH09', '2024-10-01', 120, 0, N'Chưa giao', 'NV02', 'SP09'),
+	('DDH09', '2024-10-01', 120, 120, N'Đã giao đủ', 'NV02', 'SP09'),      -- Fix: Đã nhập đủ ở PN07	
 	('DDH10', '2024-10-15', 60, 60, N'Đã giao đủ', 'NV02', 'SP10'),
-	('DDH11', '2024-11-10', 120, 0, N'Chưa giao', 'NV02', 'SP11');
+	('DDH11', '2024-11-10', 120, 60, N'Đã giao một phần', 'NV02', 'SP11'); -- Fix: Đặt 120, PN09 mới nhập 60 -> Giao 1 phần
 GO
 
 -- 14. BẢNG PHIEUNHAPHANG (Phụ thuộc: NHASANXUAT)
@@ -560,7 +642,7 @@ VALUES
 	('DDH03', 'PN02', 100),
 	('DDH04', 'PN02', 50),
 	('DDH05', 'PN03', 200),
-	('DDH06', 'PN04', 80),
+	('DDH06', 'PN04', 20), -- Sửa lại vì ở trên chỉ giao 1 phần
 	('DDH07', 'PN05', 150),
 	('DDH08', 'PN06', 30),
 	('DDH09', 'PN07', 120),
@@ -573,7 +655,7 @@ GO
 INSERT INTO HOADON
 	(MAHD, NGAYLAP, TONGTIEN, MANV, MAPG, MAKH)
 VALUES
-	('HD01', GETDATE(), 0, 'NV03', NULL, 'KH01'),
+	('HD01', GETDATE(), 0, 'NV03', NULL, 'KH01'), -- Do getDate() nên phải để KM02 dài xíu
 	-- Hóa đơn hôm nay (sẽ kích hoạt trigger tính tiền)
 	('HD02', '2024-02-15', 0, 'NV03', 'PG02', 'KH02'),
 	-- Hóa đơn cũ
@@ -582,7 +664,7 @@ VALUES
 	('HD05', '2024-08-03', 0, 'NV03', 'PG05', 'KH06'),
 	('HD06', '2024-08-15', 0, 'NV03', NULL, 'KH08'),
 	('HD07', '2024-09-05', 0, 'NV03', NULL, 'KH09'),
-	('HD08', '2024-09-15', 0, 'NV03', 'PG07', 'KH10'),
+	('HD08', '2024-09-15', 0, 'NV03', 'PG07', 'KH09'), -- Fix: PG07 là của KH09, nên đổi MAKH thành KH09 (Code cũ là KH10)
 	('HD09', '2024-10-05', 0, 'NV03', NULL, 'KH12'),
 	('HD10', '2024-10-20', 0, 'NV03', NULL, 'KH13');
 GO
@@ -618,6 +700,35 @@ VALUES
 	('HD10', 'SP18', 2, 0, 'KM14'),
 	('HD01', 'SP35', 3, 0, 'KM02'),
 	('HD03', 'SP50', 2, 0, 'KM03');
+GO
+
+
+-- ... (Phần Insert dữ liệu của bạn ở trên) ...
+
+PRINT N'Đang tính toán lại Thành tiền và Tổng tiền...';
+
+-- 1. Cập nhật THANHTIEN cho tất cả chi tiết hóa đơn
+UPDATE CTHD
+SET THANHTIEN = S.DONGIA * CTHD.SOLUONG * (1 - ISNULL(CTKM.TILEGIAM, 0))
+FROM CHITIETHOADON CTHD
+JOIN SANPHAM S ON CTHD.MASP = S.MASP 
+JOIN HOADON HD ON HD.MAHD = CTHD.MAHD
+-- Tìm khuyến mãi áp dụng (Khớp Mã KM và Sản phẩm)
+LEFT JOIN CHITIETKM CTKM ON CTKM.MAKM = CTHD.MAKM AND CTKM.MASP = S.MASP;
+
+-- 2. Cập nhật TONGTIEN cho tất cả Hóa đơn
+-- Dùng cú pháp CTE hoặc Subquery để tính tổng nhanh
+WITH TongTienTheoHD AS (
+    SELECT MAHD, SUM(THANHTIEN) AS Tong
+    FROM CHITIETHOADON
+    GROUP BY MAHD
+)
+UPDATE HD
+SET HD.TONGTIEN = T.Tong
+FROM HOADON HD
+JOIN TongTienTheoHD T ON HD.MAHD = T.MAHD;
+
+PRINT N'Đã tính toán xong!';
 GO
 
 -- Kiểm tra kết quả

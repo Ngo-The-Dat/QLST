@@ -24,6 +24,8 @@ BEGIN
         FROM HOADON
         WHERE NGAYLAP = CAST(@CurrentDate AS DATE);
 
+        -- Conflict nếu insert  dòng hóa đơn
+
         SELECT 
             N'Báo Cáo Ngày' AS TieuDe,
             @CurrentDate AS Ngay,

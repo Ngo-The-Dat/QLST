@@ -11,6 +11,7 @@ CREATE OR ALTER PROCEDURE USP_CANCEL_DAT_HANG
 AS
 BEGIN
     SET NOCOUNT ON;
+    SET TRANSACTION ISOLATION LEVEL READ COMMITTED
     BEGIN TRANSACTION;
     
     BEGIN TRY
@@ -35,6 +36,8 @@ BEGIN
             ROLLBACK TRANSACTION;
             RETURN;
         END
+
+        -- Cập nhật thêm số lượng đã nhận hoặc trạng thái
 
         DELETE FROM DONDATHANG WHERE MAHD = @MaHD
 
