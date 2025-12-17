@@ -2,7 +2,15 @@ USE QLST
 go
 -- bảng này là một đơn nhập hàng, có thể dành cho nhiều đơn hàng, có nhiều dòng và mặc định là
 -- do cùng 1 nhà sản xuất gửi - do nhà sản xuất đó gửi phiếu này
-
+IF TYPE_ID(N'RECEIVED_ITEM') IS NULL
+BEGIN
+    CREATE TYPE RECEIVED_ITEM AS TABLE
+    (
+        MAHD VARCHAR(10),    
+        SLNHANTHUCTE INT
+    )
+END
+GO
 
 create or alter procedure USP_RECEIVE_GOODS_FROM_NSX @v_received_items RECEIVED_ITEM READONLY
 AS
