@@ -254,61 +254,47 @@ GO
 
 -- 4. BẢNG KH_THANHVIEN (Phụ thuộc: KHACHHANG, NHANVIEN, CAPDOTHE)
 -- Lưu ý: NGAYDANGKY phải > NGAYSINH
-INSERT INTO KH_THANHVIEN
-	(MAKH, NGAYDANGKY, NGAYSINH, MANV, MACAPDO)
-VALUES
-	('KH01', '2023-01-01', '1995-05-20', 'NV04', 'LV2'),
-	('KH02', '2022-06-15', '1990-11-10', 'NV04', 'LV4'),
-	('KH04', '2023-02-10', '1992-03-05', 'NV07', 'LV2'),
-	('KH05', '2024-01-20', '1994-07-12', 'NV07', 'LV1'),
-	('KH06', '2024-03-01', '1991-12-01', 'NV08', 'LV3'),
-	('KH08', '2023-05-05', '1988-09-09', 'NV09', 'LV2'),
-	('KH09', '2023-06-06', '1990-10-10', 'NV09', 'LV1'),
-	('KH10', '2024-02-14', '1993-02-14', 'NV10', 'LV3'),
-	('KH12', '2023-11-11', '1985-11-11', 'NV06', 'LV4'),
-	('KH13', '2025-01-01', '1996-01-01', 'NV06', 'LV1');
+INSERT INTO KH_THANHVIEN (MAKH, NGAYDANGKY, NGAYSINH, MANV, MACAPDO) VALUES
+('KH01', '2023-01-01', '1995-05-20', 'NV04', 'LV2'),
+('KH02', '2022-06-15', '1990-11-10', 'NV04', 'LV4'),
+('KH04', '2023-02-10', '1992-03-05', 'NV07', 'LV1'),
+('KH05', '2024-01-20', '1994-07-12', 'NV07', 'LV1'),
+('KH06', '2024-03-01', '1991-12-01', 'NV08', 'LV3'),
+('KH08', '2023-05-05', '1988-09-09', 'NV09', 'LV2'),
+('KH09', '2023-06-06', '1990-10-10', 'NV09', 'LV1'),
+('KH10', '2024-02-14', '1993-02-14', 'NV10', 'LV3'),
+('KH12', '2023-11-11', '1985-11-11', 'NV06', 'LV4'),
+('KH13', '2025-01-01', '1996-01-01', 'NV06', 'LV1'),
+('KH15', '2024-02-01', '1999-08-20', 'NV07', 'LV1');
 GO
 
 -- 5. BẢNG PHIEUGIAMGIA (Phụ thuộc: KH_THANHVIEN)
-INSERT INTO PHIEUGIAMGIA
-	(MAPG, PHANTRAMGIAM, TRANGTHAI, MAKH)
-VALUES
-	('PG01', 0.10, N'Chưa dùng', 'KH01'),
-	('PG02', 0.20, N'Đã dùng', 'KH02'),
-	('PG03', 0.05, N'Chưa dùng', 'KH04'),
-	('PG04', 0.10, N'Chưa dùng', 'KH05'),
-	('PG05', 0.15, N'Chưa dùng', 'KH06'),
-	('PG06', 0.20, N'Chưa dùng', 'KH08'),
-	('PG07', 0.05, N'Đã dùng', 'KH09'),
-	('PG08', 0.10, N'Chưa dùng', 'KH10'),
-	('PG09', 0.12, N'Chưa dùng', 'KH12'),
-	('PG10', 0.08, N'Chưa dùng', 'KH13'),
-	('PG12', 0.25, N'Chưa dùng', 'KH02');
+INSERT INTO PHIEUGIAMGIA (MAPG, PHANTRAMGIAM, TRANGTHAI, MAKH) VALUES
+('PG01', 0.1, N'Chưa dùng', 'KH01'),
+('PG02', 0.2, N'Đã dùng', 'KH02'),
+('PG03', 0.1, N'Đã dùng', 'KH04'),
+('PG04', 0.1, N'Chưa dùng', 'KH05'),
+('PG05', 0.15, N'Đã dùng', 'KH06'),
+('PG06', 0.2, N'Chưa dùng', 'KH08'),
+('PG07', 0.1, N'Đã dùng', 'KH09'),
+('PG08', 0.1, N'Chưa dùng', 'KH10'),
+('PG09', 0.15, N'Chưa dùng', 'KH12'),
+('PG10', 0.1, N'Chưa dùng', 'KH13'),
+('PG12', 0.2, N'Chưa dùng', 'KH02');
 GO
 
 -- 6. BẢNG SOTIENTIEU (Phụ thuộc: KH_THANHVIEN)
-INSERT INTO SOTIENTIEU
-	(MAKH, NAM, SOTIENDATIEU)
-VALUES
-	('KH01', 2024, 12000000),
-	-- Bạc (>=10M, <30M)
-	('KH02', 2024, 60000000),
-	-- Bạch kim (>=50M)
-	('KH04', 2024, 8000000),
-	-- Đồng (<10M)
-	('KH05', 2024, 2000000),
-	-- Đồng
-	('KH06', 2024, 35000000),
-	-- Vàng (>=30M, <50M)
-	('KH08', 2024, 15000000),
-	-- Bạc
-	('KH09', 2024, 500000),
-	-- Đồng
-	('KH10', 2024, 32000000),
-	-- Vàng
-	('KH12', 2024, 90000000),
-	-- Bạch kim
-	('KH13', 2024, 4000000);   -- Đồng
+INSERT INTO SOTIENTIEU (MAKH, NAM, SOTIENDATIEU) VALUES
+('KH01', 2024, 13007500),  -- Bạc (>=10M, <30M)
+('KH02', 2024, 50680000),  -- Bạch kim (>=50M)
+('KH04', 2024, 9097700),   -- Đồng (<10M)
+('KH05', 2024, 6196000),   -- Đồng
+('KH06', 2024, 30027500),  -- Vàng (>=30M, <50M)
+('KH08', 2024, 12000000),  -- Bạc
+('KH09', 2024, 903599),    -- Đồng
+('KH10', 2024, 33650000),  -- Vàng
+('KH12', 2024, 72270000),  -- Bạch kim
+('KH13', 2024, 14209700);   -- Đồng
 GO
 
 -- 7. BẢNG KHUYENMAI (Phụ thuộc: NHANVIEN)
@@ -402,8 +388,8 @@ VALUES
 	('NSX10', N'SUNNY Tech', N'Bắc Ninh', 'hello@sunnytech.vn', '0228123410');
 GO
 
--- 11. BẢNG SANPHAM (Đã trừ Tồn kho dựa trên lượng bán trong CHITIETHOADON bên dưới)
--- Ví dụ: SP01 ban đầu 100, bán 5 -> Còn 95
+-- 11. BẢNG SANPHAM (Phụ thuộc: DANHMUC, NHASANXUAT)
+-- Lưu ý: TONKHO <= SOLUONGTOIDA
 INSERT INTO SANPHAM (MASP, TENSANPHAM, DONGIA, MOTASP, TONKHO, SOLUONGTOIDA, MADM, MANSX) VALUES
 ('SP01', N'Sữa tươi Vinamilk', 30000, N'Hộp 1 lít', 95, 500, 'DM01', 'NSX01'),
 ('SP02', N'Chảo chống dính', 200000, N'Size 24cm', 49, 200, 'DM02', 'NSX02'),
@@ -423,103 +409,194 @@ INSERT INTO SANPHAM (MASP, TENSANPHAM, DONGIA, MOTASP, TONKHO, SOLUONGTOIDA, MAD
 ('SP16', N'Tẩy rửa bếp', 60000, N'Chai 500ml', 138, 400, 'DM05', 'NSX03'),
 ('SP17', N'Bộ nồi inox', 1200000, N'3 món', 19, 50, 'DM06', 'NSX07'),
 ('SP18', N'Túi giấy', 5000, N'Túi mua hàng', 498, 2000, 'DM10', 'NSX09'),
-('SP19', N'Bút bi', 5000, N'Ngòi 0.7', 1000, 5000, 'DM10', 'NSX09'), -- Không bán
-('SP20', N'Giấy A4 500t', 120000, N'Giấy in', 80, 500, 'DM10', 'NSX09'), -- Không bán
-('SP21', N'Bóng đèn 9W', 30000, N'LED tiết kiệm', 250, 1000, 'DM06', 'NSX08'), -- Không bán
-('SP22', N'Cốc thủy tinh', 45000, N'Cốc uống', 200, 500, 'DM06', 'NSX07'), -- Không bán
-('SP23', N'Ổ cắm điện', 80000, N'3 lỗ', 120, 400, 'DM06', 'NSX04'), -- Không bán
-('SP24', N'Bàn học', 950000, N'Bàn gỗ nhỏ', 25, 100, 'DM02', 'NSX10'), -- Không bán
-('SP25', N'Đèn ngủ', 180000, N'Đèn nhỏ', 70, 200, 'DM06', 'NSX08'), -- Không bán
-('SP26', N'Khẩu trang', 15000, N'10 cái', 1000, 5000, 'DM09', 'NSX03'), -- Không bán
-('SP27', N'Son môi', 200000, N'High color', 80, 300, 'DM05', 'NSX05'), -- Không bán
-('SP28', N'Bình nước sport', 120000, N'1L', 90, 300, 'DM06', 'NSX08'), -- Không bán
-('SP29', N'Giày thể thao', 650000, N'Size đa dạng', 40, 200, 'DM02', 'NSX10'), -- Không bán
-('SP30', N'Áo phông cotton', 220000, N'Size S-XXL', 120, 500, 'DM02', 'NSX10'), -- Không bán
-('SP31', N'Bộ dao nhà bếp 5 món', 450000, N'Inox cao cấp', 30, 150, 'DM06', 'NSX06'), -- Không bán
-('SP32', N'Tủ lạnh mini', 3500000, N'50L', 10, 20, 'DM06', 'NSX07'), -- Không bán
-('SP33', N'Quạt treo tường', 600000, N'3 tốc độ', 25, 100, 'DM06', 'NSX08'), -- Không bán
-('SP34', N'Máy xay sinh tố', 800000, N'400W', 18, 80, 'DM06', 'NSX07'), -- Không bán
+('SP19', N'Bút bi', 5000, N'Ngòi 0.7', 1000, 5000, 'DM10', 'NSX09'),
+('SP20', N'Giấy A4 500t', 120000, N'Giấy in', 80, 500, 'DM10', 'NSX09'),
+('SP21', N'Bóng đèn 9W', 30000, N'LED tiết kiệm', 250, 1000, 'DM06', 'NSX08'),
+('SP22', N'Cốc thủy tinh', 45000, N'Cốc uống', 200, 500, 'DM06', 'NSX07'),
+('SP23', N'Ổ cắm điện', 80000, N'3 lỗ', 120, 400, 'DM06', 'NSX04'),
+('SP24', N'Bàn học', 950000, N'Bàn gỗ nhỏ', 25, 100, 'DM02', 'NSX10'),
+('SP25', N'Đèn ngủ', 180000, N'Đèn nhỏ', 70, 200, 'DM06', 'NSX08'),
+('SP26', N'Khẩu trang', 15000, N'10 cái', 1000, 5000, 'DM09', 'NSX03'),
+('SP27', N'Son môi', 200000, N'High color', 80, 300, 'DM05', 'NSX05'),
+('SP28', N'Bình nước sport', 120000, N'1L', 90, 300, 'DM06', 'NSX08'),
+('SP29', N'Giày thể thao', 650000, N'Size đa dạng', 40, 200, 'DM02', 'NSX10'),
+('SP30', N'Áo phông cotton', 220000, N'Size S-XXL', 120, 500, 'DM02', 'NSX10'),
+('SP31', N'Bộ dao nhà bếp 5 món', 450000, N'Inox cao cấp', 30, 150, 'DM06', 'NSX06'),
+('SP32', N'Tủ lạnh mini', 3500000, N'50L', 10, 20, 'DM06', 'NSX07'),
+('SP33', N'Quạt treo tường', 600000, N'3 tốc độ', 25, 100, 'DM06', 'NSX08'),
+('SP34', N'Máy xay sinh tố', 800000, N'400W', 18, 80, 'DM06', 'NSX07'),
 ('SP35', N'Bình giữ nhiệt', 250000, N'500ml', 147, 500, 'DM08', 'NSX08'),
-('SP36', N'Ghế văn phòng', 1500000, N'Có cần ngả', 12, 50, 'DM02', 'NSX10'), -- Không bán
-('SP37', N'Máy sấy tóc', 450000, N'1200W', 22, 100, 'DM06', 'NSX07'), -- Không bán
-('SP38', N'Bình sữa trẻ em', 220000, N'PPSU', 60, 200, 'DM07', 'NSX03'), -- Không bán
-('SP39', N'Đồ chơi xếp hình', 180000, N'Nhựa an toàn', 70, 300, 'DM04', 'NSX09'), -- Không bán
-('SP40', N'Bột ăn dặm', 140000, N'Hạt dinh dưỡng', 80, 300, 'DM07', 'NSX03'), -- Không bán
-('SP41', N'Ghế ăn cho bé', 550000, N'Ghế gấp', 25, 100, 'DM04', 'NSX09'), -- Không bán
-('SP42', N'Tã quần', 250000, N'Size M 50pcs', 120, 500, 'DM07', 'NSX03'), -- Không bán
-('SP43', N'Đệm', 1200000, N'Đệm hơi', 15, 50, 'DM02', 'NSX10'), -- Không bán
-('SP44', N'Bộ đồ ăn trẻ em', 190000, N'Siêu nhẹ', 60, 200, 'DM04', 'NSX09'), -- Không bán
-('SP45', N'Cọ rửa chén', 35000, N'2 cái', 300, 1000, 'DM05', 'NSX05'), -- Không bán
-('SP46', N'Chảo rán 28cm', 320000, N'Chống dính cao cấp', 70, 300, 'DM06', 'NSX04'), -- Không bán
-('SP47', N'Dầu ăn 1L', 65000, N'Dầu hướng dương', 200, 1000, 'DM07', 'NSX03'), -- Không bán
-('SP48', N'Đai lưng hỗ trợ', 180000, N'Thể thao', 90, 300, 'DM09', 'NSX06'), -- Không bán
-('SP49', N'Bộ ốc vít', 90000, N'Bộ đa năng', 130, 500, 'DM10', 'NSX10'), -- Không bán
-('SP50', N'Đồng hồ treo tường', 220000, N'Đường kính 30cm', 58, 200, 'DM06', 'NSX07');
+('SP36', N'Ghế văn phòng', 1500000, N'Có cần ngả', 12, 50, 'DM02', 'NSX10'),
+('SP37', N'Máy sấy tóc', 450000, N'1200W', 22, 100, 'DM06', 'NSX07'),
+('SP38', N'Bình sữa trẻ em', 220000, N'PPSU', 60, 200, 'DM07', 'NSX03'),
+('SP39', N'Đồ chơi xếp hình', 180000, N'Nhựa an toàn', 70, 300, 'DM04', 'NSX09'),
+('SP40', N'Bột ăn dặm', 140000, N'Hạt dinh dưỡng', 80, 300, 'DM07', 'NSX03'),
+('SP41', N'Ghế ăn cho bé', 550000, N'Ghế gấp', 25, 100, 'DM04', 'NSX09'),
+('SP42', N'Tã quần', 250000, N'Size M 50pcs', 120, 500, 'DM07', 'NSX03'),
+('SP43', N'Đệm', 1200000, N'Đệm hơi', 15, 50, 'DM02', 'NSX10'),
+('SP44', N'Bộ đồ ăn trẻ em', 190000, N'Siêu nhẹ', 60, 200, 'DM04', 'NSX09'),
+('SP45', N'Cọ rửa chén', 35000, N'2 cái', 300, 1000, 'DM05', 'NSX05'),
+('SP46', N'Chảo rán 28cm', 320000, N'Chống dính cao cấp', 70, 300, 'DM06', 'NSX04'),
+('SP47', N'Dầu ăn 1L', 65000, N'Dầu hướng dương', 200, 1000, 'DM07', 'NSX03'),
+('SP48', N'Đai lưng hỗ trợ', 180000, N'Thể thao', 90, 300, 'DM09', 'NSX06'),
+('SP49', N'Bộ ốc vít', 90000, N'Bộ đa năng', 130, 500, 'DM10', 'NSX10'),
+('SP50', N'Đồng hồ treo tường', 220000, N'Đường kính 30cm', 58, 200, 'DM06', 'NSX07'),
+('SP51', N'TV OLED 55 inch', 25000000, N'Tivi OLED 4K cao cấp', 10, 50, 'DM03', 'NSX10'),
+('SP52', N'Máy lọc không khí Sharp', 7200000, N'Lọc bụi mịn HEPA', 20, 100, 'DM06', 'NSX07'),
+('SP53', N'Robot hút bụi Xiaomi Gen4', 8500000, N'Hút bụi thông minh', 15, 80, 'DM06', 'NSX04'),
+('SP54', N'Laptop UltraBook 14"', 22000000, N'Core i7, 16GB RAM, SSD 1TB', 12, 50, 'DM03', 'NSX10'),
+('SP55', N'Loa Bluetooth cao cấp JBL', 5800000, N'Âm thanh sống động', 30, 150, 'DM03', 'NSX08'),
+('SP56', N'Máy giặt 9kg Inverter', 11000000, N'Máy giặt tiết kiệm điện', 8, 30, 'DM06', 'NSX07');
 GO
 
--- 12. BẢNG CHITIETKM (Giữ nguyên như cũ vì không cần tính toán lại)
+-- 12. BẢNG CHITIETKM (Phụ thuộc: SANPHAM, KHUYENMAI)
 INSERT INTO CHITIETKM (MASP, MAKM, SOLUONG, TILEGIAM) VALUES
-('SP01', 'KM02', 10, 0.1), ('SP02', 'KM02', 500, 0.2), ('SP03', 'KM03', 500, 0.05), ('SP04', 'KM03', 400, 0.07),
-('SP05', 'KM04', 200, 0.10), ('SP06', 'KM04', 150, 0.15), ('SP07', 'KM05', 50, 0.08), ('SP08', 'KM05', 100, 0.10),
-('SP09', 'KM06', 200, 0.12), ('SP10', 'KM06', 80, 0.10), ('SP11', 'KM07', 100, 0.05), ('SP12', 'KM08', 40, 0.20),
-('SP13', 'KM09', 60, 0.10), ('SP14', 'KM10', 300, 0.05), ('SP15', 'KM11', 150, 0.08), ('SP16', 'KM12', 200, 0.07),
-('SP17', 'KM13', 20, 0.12), ('SP18', 'KM14', 1000, 0.03), ('SP19', 'KM15', 800, 0.02), ('SP20', 'KM16', 60, 0.10),
-('SP21', 'KM17', 250, 0.06), ('SP22', 'KM18', 120, 0.09), ('SP23', 'KM19', 100, 0.08), ('SP24', 'KM20', 30, 0.15),
-('SP25', 'KM21', 70, 0.05), ('SP26', 'KM22', 1500, 0.04), ('SP27', 'KM23', 80, 0.20), ('SP28', 'KM24', 90, 0.12),
-('SP29', 'KM25', 50, 0.18), ('SP30', 'KM26', 120, 0.10), ('SP31', 'KM27', 30, 0.11), ('SP32', 'KM28', 10, 0.25),
-('SP33', 'KM29', 25, 0.07), ('SP34', 'KM30', 18, 0.09), ('SP35', 'KM02', 200, 0.05), ('SP36', 'KM02', 50, 0.07),
-('SP37', 'KM08', 40, 0.10), ('SP38', 'KM12', 70, 0.06), ('SP39', 'KM16', 60, 0.05), ('SP40', 'KM18', 80, 0.08),
-('SP41', 'KM21', 20, 0.10), ('SP42', 'KM22', 200, 0.04), ('SP43', 'KM24', 10, 0.12), ('SP44', 'KM26', 15, 0.09),
-('SP45', 'KM27', 300, 0.03), ('SP46', 'KM28', 50, 0.08), ('SP47', 'KM29', 400, 0.02), ('SP48', 'KM30', 80, 0.07),
+('SP01', 'KM02', 100, 0.1), -- Giảm 10% cho Sữa trong đợt KM02
+('SP02', 'KM02', 50, 0.2),  -- Giảm 20% cho Chảo trong đợt KM02
+('SP03', 'KM03', 50, 0.05), ('SP04', 'KM03', 400, 0.07),
+('SP05', 'KM04', 200, 0.10), ('SP06', 'KM04', 150, 0.15),
+('SP07', 'KM05', 50, 0.08), ('SP08', 'KM05', 100, 0.10),
+('SP09', 'KM06', 200, 0.12), ('SP10', 'KM06', 80, 0.10),
+('SP11', 'KM07', 100, 0.05), ('SP12', 'KM08', 40, 0.20),
+('SP13', 'KM09', 60, 0.10), ('SP14', 'KM10', 300, 0.05),
+('SP15', 'KM11', 150, 0.08), ('SP16', 'KM12', 200, 0.07),
+('SP17', 'KM13', 20, 0.12), ('SP18', 'KM14', 1000, 0.03),
+('SP19', 'KM15', 800, 0.02), ('SP20', 'KM16', 60, 0.10),
+('SP21', 'KM17', 250, 0.06), ('SP22', 'KM18', 120, 0.09),
+('SP23', 'KM19', 100, 0.08), ('SP24', 'KM20', 30, 0.15),
+('SP25', 'KM21', 70, 0.05), ('SP26', 'KM22', 1500, 0.04),
+('SP27', 'KM23', 80, 0.20), ('SP28', 'KM24', 90, 0.12),
+('SP29', 'KM25', 50, 0.18), ('SP30', 'KM26', 120, 0.10),
+('SP31', 'KM27', 30, 0.11), ('SP32', 'KM28', 10, 0.25),
+('SP33', 'KM29', 25, 0.07), ('SP34', 'KM30', 18, 0.09),
+('SP35', 'KM02', 200, 0.05), ('SP36', 'KM02', 20, 0.07),
+('SP37', 'KM08', 40, 0.10), ('SP38', 'KM12', 70, 0.06),
+('SP39', 'KM16', 60, 0.05), ('SP40', 'KM18', 80, 0.08),
+('SP41', 'KM21', 20, 0.10), ('SP42', 'KM22', 200, 0.04),
+('SP43', 'KM24', 10, 0.12), ('SP44', 'KM26', 15, 0.09),
+('SP45', 'KM27', 300, 0.03), ('SP46', 'KM28', 50, 0.08),
+('SP47', 'KM29', 400, 0.02), ('SP48', 'KM30', 80, 0.07),
 ('SP49', 'KM05', 100, 0.06), ('SP50', 'KM03', 60, 0.05);
 GO
 
--- 16. BẢNG HOADON (Đã tính sẵn TONGTIEN sau khi trừ cả KM sản phẩm và Voucher)
-INSERT INTO HOADON (MAHD, NGAYLAP, TONGTIEN, MANV, MAPG, MAKH) VALUES
-('HD01', GETDATE(), 1047500, 'NV03', NULL, 'KH01'),  -- Tổng hàng: 1,047,500
-('HD02', '2024-02-15', 544000, 'NV03', 'PG02', 'KH02'), -- Tổng hàng: 680,000 - Voucher 20%
-('HD03', '2024-07-06', 567815, 'NV03', 'PG03', 'KH04'), -- Tổng hàng: 597,700 - Voucher 5%
-('HD04', '2024-07-12', 396000, 'NV03', NULL, 'KH05'),   -- Tổng hàng: 396,000
-('HD05', '2024-08-03', 159375, 'NV03', 'PG05', 'KH06'), -- Tổng hàng: 187,500 - Voucher 15%
-('HD06', '2024-08-15', 1119000, 'NV03', NULL, 'KH08'),  -- Tổng hàng: 1,119,000
-('HD07', '2024-09-05', 903600, 'NV03', NULL, 'KH09'),   -- Tổng hàng: 903,600
-('HD08', '2024-09-15', 142500, 'NV03', 'PG07', 'KH10'), -- Tổng hàng: 150,000 - Voucher 5%
-('HD09', '2024-10-05', 270000, 'NV03', NULL, 'KH12'),   -- Tổng hàng: 270,000
-('HD10', '2024-10-20', 1209700, 'NV03', NULL, 'KH13');  -- Tổng hàng: 1,209,700
+-- 13. BẢNG DONDATHANG (Phụ thuộc: NHANVIEN, SANPHAM)
+-- Đơn đặt hàng từ nhà cung cấp
+INSERT INTO DONDATHANG (MAHD, NGAYLAP, SOLUONGDAT, SOLUONGDANHAN, TRANGTHAI, MANV, MASP) VALUES 
+('DDH01', '2024-05-01', 200, 0, N'Đã giao đủ', 'NV02', 'SP01'),
+('DDH02', '2024-06-01', 100, 0, N'Chưa giao', 'NV02', 'SP02'),
+('DDH03', '2024-07-01', 100, 0, N'Đã giao đủ', 'NV02', 'SP03'),
+('DDH04', '2024-07-05', 50, 0, N'Đã giao đủ', 'NV02', 'SP04'),
+('DDH05', '2024-08-01', 200, 200, N'Đã giao đủ', 'NV02', 'SP05'),
+('DDH06', '2024-08-10', 80, 20, N'Đã giao đủ', 'NV02', 'SP06'),
+('DDH07', '2024-09-01', 150, 0, N'Đã giao đủ', 'NV02', 'SP07'),
+('DDH08', '2024-09-10', 30, 30, N'Đã giao đủ', 'NV02', 'SP08'),
+('DDH09', '2024-10-01', 120, 0, N'Đã giao đủ', 'NV02', 'SP09'),
+('DDH10', '2024-10-15', 60, 60, N'Đã giao đủ', 'NV02', 'SP10'),
+('DDH11', '2024-11-10', 120, 0, N'Đã giao một phần', 'NV02', 'SP11');
 GO
 
--- 17. BẢNG CHITIETHOADON (Đã tính sẵn THANHTIEN = SL * Dongia * (1 - Tỉ lệ KM))
+-- 14. BẢNG PHIEUNHAPHANG (Phụ thuộc: NHASANXUAT)
+INSERT INTO PHIEUNHAPHANG
+	(MAPN, NGAYNHAP, MANSX)
+VALUES
+	('PN01', '2024-05-05', 'NSX01'),
+	('PN02', '2024-07-05', 'NSX03'),
+	('PN03', '2024-08-02', 'NSX04'),
+	('PN04', '2024-08-12', 'NSX05'),
+	('PN05', '2024-09-02', 'NSX06'),
+	('PN06', '2024-09-12', 'NSX07'),
+	('PN07', '2024-10-05', 'NSX08'),
+	('PN08', '2024-10-15', 'NSX09'),
+	('PN09', '2024-11-02', 'NSX10'),
+	('PN10', '2024-11-20', 'NSX03');
+GO
+
+-- 15. BẢNG CHITIETPHIEUNHAP (Phụ thuộc: DONDATHANG, PHIEUNHAPHANG)
+INSERT INTO CHITIETPHIEUNHAP
+	(MAHD, MAPN, SLNHANTHUCTE)
+VALUES
+	('DDH01', 'PN01', 200),
+	-- Nhập hàng cho đơn DDH01
+	('DDH03', 'PN02', 100),
+	('DDH04', 'PN02', 50),
+	('DDH05', 'PN03', 200),
+	('DDH06', 'PN04', 80),
+	('DDH07', 'PN05', 150),
+	('DDH08', 'PN06', 30),
+	('DDH09', 'PN07', 120),
+	('DDH10', 'PN08', 60),
+	('DDH11', 'PN09', 60);
+GO
+
+-- 16. BẢNG HOADON (Phụ thuộc: NHANVIEN, PHIEUGIAMGIA, KHACHHANG)
+-- Tạo 2 hóa đơn: 1 cái hiện tại, 1 cái trong quá khứ
+INSERT INTO HOADON (MAHD, NGAYLAP, TONGTIEN, MANV, MAPG, MAKH) VALUES
+('HD01', '2024-03-25', 1047500, 'NV03', NULL, 'KH01'),     
+('HD02', '2024-02-15', 680000, 'NV03', 'PG02', 'KH02'),
+('HD03', '2024-07-06', 597700, 'NV03', 'PG03', 'KH04'),
+('HD04', '2024-07-12', 396000, 'NV03', NULL, 'KH05'),
+('HD05', '2024-08-03', 187500, 'NV03', 'PG05', 'KH06'),
+('HD06', '2024-08-15', 1119000, 'NV03', NULL, 'KH08'),
+('HD07', '2024-09-05', 903599, 'NV03', NULL, 'KH09'),
+('HD08', '2024-09-15', 150000, 'NV03', 'PG07', 'KH10'),
+('HD09', '2024-10-05', 270000, 'NV03', NULL, 'KH12'),
+('HD10', '2024-10-20', 1209700, 'NV03', NULL, 'KH13'),
+('HD11', '2024-10-05', 11960000, 'NV03', NULL, 'KH01'),
+('HD12', '2024-10-08', 50000000, 'NV03', NULL, 'KH02'),
+('HD13', '2024-10-10', 8500000, 'NV03', NULL, 'KH04'),
+('HD14', '2024-10-12', 5800000, 'NV03', NULL, 'KH05'),
+('HD15', '2024-10-15', 27800000, 'NV03', NULL, 'KH06'),
+('HD16', '2024-11-01', 11000000, 'NV03', NULL, 'KH08'),
+('HD17', '2024-11-05', 33500000, 'NV03', NULL, 'KH10'),
+('HD18', '2024-11-10', 72000000, 'NV03', NULL, 'KH12'),
+('HD19', '2024-11-15', 13000000, 'NV03', NULL, 'KH13'),
+('HD20', '2024-11-20', 2040000, 'NV03', NULL, 'KH06');
+GO
+
+-- 17. BẢNG CHITIETHOADON (Phụ thuộc: HOADON, SANPHAM, KHUYENMAI)
+-- Lưu ý quan trọng:
+-- Trigger của bạn sẽ tự động: 
+-- 1. Tính THANHTIEN
+-- 2. Update TONGTIEN ngược lại bảng HOADON
+-- 3. Trừ TONKHO trong bảng SANPHAM
 INSERT INTO CHITIETHOADON (MAHD, MASP, SOLUONG, THANHTIEN, MAKM) VALUES
--- HD01
-('HD01', 'SP01', 5, 135000, 'KM02'),    -- 5 * 30k * 0.9
-('HD01', 'SP02', 1, 200000, NULL),      -- 1 * 200k
-('HD01', 'SP35', 3, 712500, 'KM02'),    -- 3 * 250k * 0.95 (KM02 cho SP35 giảm 5%)
--- HD02
-('HD02', 'SP11', 2, 360000, NULL),      -- 2 * 180k
-('HD02', 'SP12', 1, 320000, 'KM08'),    -- 1 * 400k * 0.8
--- HD03
-('HD03', 'SP03', 10, 142500, 'KM03'),   -- 10 * 15k * 0.95
-('HD03', 'SP04', 5, 37200, 'KM03'),     -- 5 * 8k * 0.93
-('HD03', 'SP50', 2, 418000, 'KM03'),    -- 2 * 220k * 0.95
--- HD04
-('HD04', 'SP05', 2, 162000, 'KM04'),    -- 2 * 90k * 0.9
-('HD04', 'SP13', 1, 234000, 'KM09'),    -- 1 * 260k * 0.9
--- HD05
-('HD05', 'SP06', 1, 102000, 'KM04'),    -- 1 * 120k * 0.85
-('HD05', 'SP14', 2, 85500, 'KM10'),     -- 2 * 45k * 0.95
--- HD06
-('HD06', 'SP07', 3, 1050000, NULL),     -- 3 * 350k
-('HD06', 'SP15', 1, 69000, 'KM11'),     -- 1 * 75k * 0.92
--- HD07
-('HD07', 'SP08', 4, 792000, 'KM05'),    -- 4 * 220k * 0.9
-('HD07', 'SP16', 2, 111600, 'KM12'),    -- 2 * 60k * 0.93
--- HD08
-('HD08', 'SP09', 6, 150000, NULL),      -- 6 * 25k
--- HD09
-('HD09', 'SP10', 2, 270000, 'KM06'),    -- 2 * 150k * 0.9
--- HD10
-('HD10', 'SP17', 1, 1200000, NULL),     -- 1 * 1.2M
-('HD10', 'SP18', 2, 9700, 'KM14');      -- 2 * 5k * 0.97
+('HD01', 'SP01', 5, 135000, 'KM02'), -- Mua 5 sữa, áp dụng KM02 (đang diễn ra)
+('HD01', 'SP02', 1, 200000, NULL),   -- Mua 1 chảo, không mã KM
+('HD02', 'SP11', 2, 360000, NULL),
+('HD02', 'SP12', 1, 320000, 'KM08'),
+('HD03', 'SP03', 10, 142500, 'KM03'),
+('HD03', 'SP04', 5, 37200, 'KM03'),
+('HD04', 'SP05', 2, 162000, 'KM04'),
+('HD04', 'SP13', 1, 234000, 'KM09'),
+('HD05', 'SP06', 1, 102000, 'KM04'),
+('HD05', 'SP14', 2, 85500, 'KM10'),
+('HD06', 'SP07', 3, 1050000, NULL),
+('HD06', 'SP15', 1, 69000, 'KM11'),
+('HD07', 'SP08', 4, 792000, 'KM05'),
+('HD07', 'SP16', 2, 111599, 'KM12'),
+('HD08', 'SP09', 6, 150000, NULL),
+('HD09', 'SP10', 2, 270000, 'KM06'),
+('HD10', 'SP17', 1, 1200000, NULL),
+('HD10', 'SP18', 2, 9700, 'KM14'),
+('HD01', 'SP35', 3, 712500, 'KM02'),
+('HD03', 'SP50', 2, 418000, 'KM03'),
+('HD11','SP55', 2, 2*5800000, NULL),
+('HD11','SP52', 1, 720000, NULL),
+('HD12','SP51', 2, 2*25000000, NULL),
+('HD13','SP53', 1, 8500000, NULL),
+('HD14','SP55', 1, 5800000, NULL),
+('HD15','SP54', 1, 22000000, NULL),
+('HD15','SP55', 1, 5800000, NULL),
+('HD16','SP56', 1, 11000000, NULL),
+('HD17','SP51', 1, 25000000, NULL),
+('HD17','SP53', 1, 8500000, NULL),
+('HD18','SP51', 2, 2*25000000, NULL),
+('HD18','SP54', 1, 22000000, NULL),
+('HD19','SP52', 1, 7200000, NULL),
+('HD19','SP55', 1, 5800000, NULL),
+('HD20', 'SP36', 1, 1500000, NULL),
+('HD20', 'SP31', 1, 450000, NULL),
+('HD20', 'SP21', 3, 90000, NULL);
 GO
 
 SELECT * FROM HOADON
