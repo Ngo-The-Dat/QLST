@@ -15,7 +15,7 @@ BEGIN
     BEGIN TRANSACTION;
     
     BEGIN TRY
-        IF NOT EXISTS (SELECT 1 FROM DONDATHANG WITH (HOLDLOCK) WHERE MAHD = @MaHD)
+        IF NOT EXISTS (SELECT 1 FROM DONDATHANG WHERE MAHD = @MaHD)
         BEGIN
             RAISERROR(N'Lỗi: Mã đơn đặt hàng %s không tồn tại.', 16, 1, @MAHD);
             ROLLBACK TRANSACTION;
@@ -26,7 +26,7 @@ BEGIN
         DECLARE @TrangThai NVARCHAR(30);
 
         SELECT @SoLuongDaNhan = SOLUONGDANHAN, @TrangThai = TRANGTHAI
-        FROM DONDATHANG
+        FROM DONDATHANG WITH (HOLDLOCK)
         WHERE MAHD = @MaHD
 
         -- Nếu giao rồi hoặc giao 1 phần thì không hủy đơn được

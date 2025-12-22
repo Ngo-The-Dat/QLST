@@ -22,6 +22,9 @@ BEGIN
             RETURN;
         END
 
+        WAITFOR DELAY '00:00:05'
+
+
         DECLARE @SoLuongDaNhan INT;
         DECLARE @TrangThai NVARCHAR(30);
 
@@ -29,6 +32,7 @@ BEGIN
         FROM DONDATHANG
         WHERE MAHD = @MaHD
 
+        PRINT @SOLUONGDANHAN
         -- Nếu giao rồi hoặc giao 1 phần thì không hủy đơn được
         IF @SoLuongDaNhan > 0 OR @TrangThai <> N'Chưa giao' 
         BEGIN
@@ -37,15 +41,13 @@ BEGIN
             RETURN;
         END
 
-        -- Cập nhật thêm số lượng đã nhận hoặc trạng thái
-
-        WAITFOR DELAY '00:00:05'
         IF NOT EXISTS (SELECT 1 FROM DONDATHANG WHERE MAHD = @MaHD)
         BEGIN
-            PRINT N'Lỗi: Mã đơn đặt hàng không tồn tại.';
+            RAISERROR(N'Lỗi: Mã đơn đặt hàng %s không tồn tại.', 16, 1, @MAHD);
             ROLLBACK TRANSACTION;
             RETURN;
         END
+        -- Cập nhật thêm số lượng đã nhận hoặc trạng thái
         DELETE FROM DONDATHANG WHERE MAHD = @MaHD
 
         PRINT N'Đã hủy (xóa) đơn đặt hàng ' + @MAHD + N' thành công.';

@@ -24,7 +24,7 @@ CREATE TABLE KHACHHANG
 (
 	MAKH VARCHAR(10) PRIMARY KEY,
 	HOTEN NVARCHAR(50),
-	SDT VARCHAR(10) UNIQUE,
+	SDT VARCHAR(10),
 	DIACHI NVARCHAR(100),
 	ISTHANHVIEN BIT DEFAULT 0
 )
@@ -117,7 +117,7 @@ CREATE TABLE SANPHAM
 	TENSANPHAM NVARCHAR(50),
 	DONGIA INT CHECK(DONGIA > 0),
 	MOTASP NVARCHAR(MAX),
-	TONKHO INT CHECK(TONKHO >= 0) DEFAULT 0,
+	TONKHO INT DEFAULT 0,
 	SOLUONGTOIDA INT CHECK(SOLUONGTOIDA > 0),
 	MADM VARCHAR(10),
 	MANSX VARCHAR(10)
@@ -484,119 +484,76 @@ VALUES
 	('NSX10', N'SUNNY Tech', N'Bắc Ninh', 'hello@sunnytech.vn', '0228123410');
 GO
 
--- 11. BẢNG SANPHAM (Phụ thuộc: DANHMUC, NHASANXUAT)
--- Lưu ý: TONKHO <= SOLUONGTOIDA
-INSERT INTO SANPHAM
-	(MASP, TENSANPHAM, DONGIA, MOTASP, TONKHO, SOLUONGTOIDA, MADM, MANSX)
-VALUES
-	('SP01', N'Sữa tươi Vinamilk', 30000, N'Hộp 1 lít', 100, 500, 'DM01', 'NSX01'),
-	('SP02', N'Chảo chống dính', 200000, N'Size 24cm', 50, 200, 'DM02', 'NSX02'),
-	('SP03', N'Bánh mì gói', 15000, N'Bánh mì sandwich', 200, 500, 'DM07', 'NSX03'),
-	('SP04', N'Nước ngọt 330ml', 8000, N'Nước giải khát', 300, 1000, 'DM08', 'NSX03'),
-	('SP05', N'Bột giặt 1kg', 90000, N'Bột giặt tiện dụng', 150, 500, 'DM05', 'NSX05'),
-	('SP06', N'Tinh dầu gội 500ml', 120000, N'Tinh dầu cho tóc', 120, 400, 'DM09', 'NSX05'),
-	('SP07', N'Bình đun siêu tốc', 350000, N'Bình 1.7L', 60, 200, 'DM06', 'NSX04'),
-	('SP08', N'Đèn bàn LED', 220000, N'Đèn học', 80, 300, 'DM06', 'NSX07'),
-	('SP09', N'Găng tay bếp', 25000, N'Găng tay silicon', 100, 500, 'DM02', 'NSX04'),
-	('SP10', N'Dao nhà bếp', 150000, N'Dao inox', 90, 300, 'DM06', 'NSX06'),
-	('SP11', N'Ghế nhựa', 180000, N'Ghế tiện dụng', 40, 200, 'DM02', 'NSX09'),
-	('SP12', N'Túi ngủ', 400000, N'Dã ngoại', 30, 100, 'DM02', 'NSX09'),
-	('SP13', N'Bộ chén bát', 260000, N'Gốm sứ', 50, 200, 'DM06', 'NSX07'),
-	('SP14', N'Khăn mặt', 45000, N'Cotton', 200, 500, 'DM09', 'NSX08'),
-	('SP15', N'Sữa tắm 250ml', 75000, N'Sữa tắm hương trái cây', 150, 400, 'DM09', 'NSX05'),
-	('SP16', N'Tẩy rửa bếp', 60000, N'Chai 500ml', 140, 400, 'DM05', 'NSX03'),
-	('SP17', N'Bộ nồi inox', 1200000, N'3 món', 20, 50, 'DM06', 'NSX07'),
-	('SP18', N'Túi giấy', 5000, N'Túi mua hàng', 500, 2000, 'DM10', 'NSX09'),
-	('SP19', N'Bút bi', 5000, N'Ngòi 0.7', 1000, 5000, 'DM10', 'NSX09'),
-	('SP20', N'Giấy A4 500t', 120000, N'Giấy in', 80, 500, 'DM10', 'NSX09'),
-	('SP21', N'Bóng đèn 9W', 30000, N'LED tiết kiệm', 250, 1000, 'DM06', 'NSX08'),
-	('SP22', N'Cốc thủy tinh', 45000, N'Cốc uống', 200, 500, 'DM06', 'NSX07'),
-	('SP23', N'Ổ cắm điện', 80000, N'3 lỗ', 120, 400, 'DM06', 'NSX04'),
-	('SP24', N'Bàn học', 950000, N'Bàn gỗ nhỏ', 25, 100, 'DM02', 'NSX10'),
-	('SP25', N'Đèn ngủ', 180000, N'Đèn nhỏ', 70, 200, 'DM06', 'NSX08'),
-	('SP26', N'Khẩu trang', 15000, N'10 cái', 1000, 5000, 'DM09', 'NSX03'),
-	('SP27', N'Son môi', 200000, N'High color', 80, 300, 'DM05', 'NSX05'),
-	('SP28', N'Bình nước sport', 120000, N'1L', 90, 300, 'DM06', 'NSX08'),
-	('SP29', N'Giày thể thao', 650000, N'Size đa dạng', 40, 200, 'DM02', 'NSX10'),
-	('SP30', N'Áo phông cotton', 220000, N'Size S-XXL', 120, 500, 'DM02', 'NSX10'),
-	('SP31', N'Bộ dao nhà bếp 5 món', 450000, N'Inox cao cấp', 30, 150, 'DM06', 'NSX06'),
-	('SP32', N'Tủ lạnh mini', 3500000, N'50L', 10, 20, 'DM06', 'NSX07'),
-	('SP33', N'Quạt treo tường', 600000, N'3 tốc độ', 25, 100, 'DM06', 'NSX08'),
-	('SP34', N'Máy xay sinh tố', 800000, N'400W', 18, 80, 'DM06', 'NSX07'),
-	('SP35', N'Bình giữ nhiệt', 250000, N'500ml', 150, 500, 'DM08', 'NSX08'),
-	('SP36', N'Ghế văn phòng', 1500000, N'Có cần ngả', 12, 50, 'DM02', 'NSX10'),
-	('SP37', N'Máy sấy tóc', 450000, N'1200W', 22, 100, 'DM06', 'NSX07'),
-	('SP38', N'Bình sữa trẻ em', 220000, N'PPSU', 60, 200, 'DM07', 'NSX03'),
-	('SP39', N'Đồ chơi xếp hình', 180000, N'Nhựa an toàn', 70, 300, 'DM04', 'NSX09'),
-	('SP40', N'Bột ăn dặm', 140000, N'Hạt dinh dưỡng', 80, 300, 'DM07', 'NSX03'),
-	('SP41', N'Ghế ăn cho bé', 550000, N'Ghế gấp', 25, 100, 'DM04', 'NSX09'),
-	('SP42', N'Tã quần', 250000, N'Size M 50pcs', 120, 500, 'DM07', 'NSX03'),
-	('SP43', N'Đệm', 1200000, N'Đệm hơi', 15, 50, 'DM02', 'NSX10'),
-	('SP44', N'Bộ đồ ăn trẻ em', 190000, N'Siêu nhẹ', 60, 200, 'DM04', 'NSX09'),
-	('SP45', N'Cọ rửa chén', 35000, N'2 cái', 300, 1000, 'DM05', 'NSX05'),
-	('SP46', N'Chảo rán 28cm', 320000, N'Chống dính cao cấp', 70, 300, 'DM06', 'NSX04'),
-	('SP47', N'Dầu ăn 1L', 65000, N'Dầu hướng dương', 200, 1000, 'DM07', 'NSX03'),
-	('SP48', N'Đai lưng hỗ trợ', 180000, N'Thể thao', 90, 300, 'DM09', 'NSX06'),
-	('SP49', N'Bộ ốc vít', 90000, N'Bộ đa năng', 130, 500, 'DM10', 'NSX10'),
-	('SP50', N'Đồng hồ treo tường', 220000, N'Đường kính 30cm', 60, 200, 'DM06', 'NSX07');
+-- 11. BẢNG SANPHAM (Đã trừ Tồn kho dựa trên lượng bán trong CHITIETHOADON bên dưới)
+-- Ví dụ: SP01 ban đầu 100, bán 5 -> Còn 95
+INSERT INTO SANPHAM (MASP, TENSANPHAM, DONGIA, MOTASP, TONKHO, SOLUONGTOIDA, MADM, MANSX) VALUES
+('SP01', N'Sữa tươi Vinamilk', 30000, N'Hộp 1 lít', 95, 500, 'DM01', 'NSX01'),
+('SP02', N'Chảo chống dính', 200000, N'Size 24cm', 49, 200, 'DM02', 'NSX02'),
+('SP03', N'Bánh mì gói', 15000, N'Bánh mì sandwich', 190, 500, 'DM07', 'NSX03'),
+('SP04', N'Nước ngọt 330ml', 8000, N'Nước giải khát', 295, 1000, 'DM08', 'NSX03'),
+('SP05', N'Bột giặt 1kg', 90000, N'Bột giặt tiện dụng', 148, 500, 'DM05', 'NSX05'),
+('SP06', N'Tinh dầu gội 500ml', 120000, N'Tinh dầu cho tóc', 119, 400, 'DM09', 'NSX05'),
+('SP07', N'Bình đun siêu tốc', 350000, N'Bình 1.7L', 57, 200, 'DM06', 'NSX04'),
+('SP08', N'Đèn bàn LED', 220000, N'Đèn học', 76, 300, 'DM06', 'NSX07'),
+('SP09', N'Găng tay bếp', 25000, N'Găng tay silicon', 94, 500, 'DM02', 'NSX04'),
+('SP10', N'Dao nhà bếp', 150000, N'Dao inox', 88, 300, 'DM06', 'NSX06'),
+('SP11', N'Ghế nhựa', 180000, N'Ghế tiện dụng', 38, 200, 'DM02', 'NSX09'),
+('SP12', N'Túi ngủ', 400000, N'Dã ngoại', 29, 100, 'DM02', 'NSX09'),
+('SP13', N'Bộ chén bát', 260000, N'Gốm sứ', 49, 200, 'DM06', 'NSX07'),
+('SP14', N'Khăn mặt', 45000, N'Cotton', 198, 500, 'DM09', 'NSX08'),
+('SP15', N'Sữa tắm 250ml', 75000, N'Sữa tắm hương trái cây', 149, 400, 'DM09', 'NSX05'),
+('SP16', N'Tẩy rửa bếp', 60000, N'Chai 500ml', 138, 400, 'DM05', 'NSX03'),
+('SP17', N'Bộ nồi inox', 1200000, N'3 món', 19, 50, 'DM06', 'NSX07'),
+('SP18', N'Túi giấy', 5000, N'Túi mua hàng', 498, 2000, 'DM10', 'NSX09'),
+('SP19', N'Bút bi', 5000, N'Ngòi 0.7', 1000, 5000, 'DM10', 'NSX09'), -- Không bán
+('SP20', N'Giấy A4 500t', 120000, N'Giấy in', 80, 500, 'DM10', 'NSX09'), -- Không bán
+('SP21', N'Bóng đèn 9W', 30000, N'LED tiết kiệm', 250, 1000, 'DM06', 'NSX08'), -- Không bán
+('SP22', N'Cốc thủy tinh', 45000, N'Cốc uống', 200, 500, 'DM06', 'NSX07'), -- Không bán
+('SP23', N'Ổ cắm điện', 80000, N'3 lỗ', 120, 400, 'DM06', 'NSX04'), -- Không bán
+('SP24', N'Bàn học', 950000, N'Bàn gỗ nhỏ', 25, 100, 'DM02', 'NSX10'), -- Không bán
+('SP25', N'Đèn ngủ', 180000, N'Đèn nhỏ', 70, 200, 'DM06', 'NSX08'), -- Không bán
+('SP26', N'Khẩu trang', 15000, N'10 cái', 1000, 5000, 'DM09', 'NSX03'), -- Không bán
+('SP27', N'Son môi', 200000, N'High color', 80, 300, 'DM05', 'NSX05'), -- Không bán
+('SP28', N'Bình nước sport', 120000, N'1L', 90, 300, 'DM06', 'NSX08'), -- Không bán
+('SP29', N'Giày thể thao', 650000, N'Size đa dạng', 40, 200, 'DM02', 'NSX10'), -- Không bán
+('SP30', N'Áo phông cotton', 220000, N'Size S-XXL', 120, 500, 'DM02', 'NSX10'), -- Không bán
+('SP31', N'Bộ dao nhà bếp 5 món', 450000, N'Inox cao cấp', 30, 150, 'DM06', 'NSX06'), -- Không bán
+('SP32', N'Tủ lạnh mini', 3500000, N'50L', 10, 20, 'DM06', 'NSX07'), -- Không bán
+('SP33', N'Quạt treo tường', 600000, N'3 tốc độ', 25, 100, 'DM06', 'NSX08'), -- Không bán
+('SP34', N'Máy xay sinh tố', 800000, N'400W', 18, 80, 'DM06', 'NSX07'), -- Không bán
+('SP35', N'Bình giữ nhiệt', 250000, N'500ml', 147, 500, 'DM08', 'NSX08'),
+('SP36', N'Ghế văn phòng', 1500000, N'Có cần ngả', 12, 50, 'DM02', 'NSX10'), -- Không bán
+('SP37', N'Máy sấy tóc', 450000, N'1200W', 22, 100, 'DM06', 'NSX07'), -- Không bán
+('SP38', N'Bình sữa trẻ em', 220000, N'PPSU', 60, 200, 'DM07', 'NSX03'), -- Không bán
+('SP39', N'Đồ chơi xếp hình', 180000, N'Nhựa an toàn', 70, 300, 'DM04', 'NSX09'), -- Không bán
+('SP40', N'Bột ăn dặm', 140000, N'Hạt dinh dưỡng', 80, 300, 'DM07', 'NSX03'), -- Không bán
+('SP41', N'Ghế ăn cho bé', 550000, N'Ghế gấp', 25, 100, 'DM04', 'NSX09'), -- Không bán
+('SP42', N'Tã quần', 250000, N'Size M 50pcs', 120, 500, 'DM07', 'NSX03'), -- Không bán
+('SP43', N'Đệm', 1200000, N'Đệm hơi', 15, 50, 'DM02', 'NSX10'), -- Không bán
+('SP44', N'Bộ đồ ăn trẻ em', 190000, N'Siêu nhẹ', 60, 200, 'DM04', 'NSX09'), -- Không bán
+('SP45', N'Cọ rửa chén', 35000, N'2 cái', 300, 1000, 'DM05', 'NSX05'), -- Không bán
+('SP46', N'Chảo rán 28cm', 320000, N'Chống dính cao cấp', 70, 300, 'DM06', 'NSX04'), -- Không bán
+('SP47', N'Dầu ăn 1L', 65000, N'Dầu hướng dương', 200, 1000, 'DM07', 'NSX03'), -- Không bán
+('SP48', N'Đai lưng hỗ trợ', 180000, N'Thể thao', 90, 300, 'DM09', 'NSX06'), -- Không bán
+('SP49', N'Bộ ốc vít', 90000, N'Bộ đa năng', 130, 500, 'DM10', 'NSX10'), -- Không bán
+('SP50', N'Đồng hồ treo tường', 220000, N'Đường kính 30cm', 58, 200, 'DM06', 'NSX07');
 GO
 
--- 12. BẢNG CHITIETKM (Phụ thuộc: SANPHAM, KHUYENMAI)
-INSERT INTO CHITIETKM
-	(MASP, MAKM, SOLUONG, TILEGIAM)
-VALUES
-	('SP01', 'KM02', 1000, 0.1),
-	-- Giảm 10% cho Sữa trong đợt KM02
-	('SP02', 'KM02', 500, 0.2),
-	-- Giảm 20% cho Chảo trong đợt KM02
-	('SP03', 'KM03', 500, 0.05),
-	('SP04', 'KM03', 400, 0.07),
-	('SP05', 'KM04', 200, 0.10),
-	('SP06', 'KM04', 150, 0.15),
-	('SP07', 'KM05', 50, 0.08),
-	('SP08', 'KM05', 100, 0.10),
-	('SP09', 'KM06', 200, 0.12),
-	('SP10', 'KM06', 80, 0.10),
-	('SP11', 'KM07', 100, 0.05),
-	('SP12', 'KM08', 40, 0.20),
-	('SP13', 'KM09', 60, 0.10),
-	('SP14', 'KM10', 300, 0.05),
-	('SP15', 'KM11', 150, 0.08),
-	('SP16', 'KM12', 200, 0.07),
-	('SP17', 'KM13', 20, 0.12),
-	('SP18', 'KM14', 1000, 0.03),
-	('SP19', 'KM15', 800, 0.02),
-	('SP20', 'KM16', 60, 0.10),
-	('SP21', 'KM17', 250, 0.06),
-	('SP22', 'KM18', 120, 0.09),
-	('SP23', 'KM19', 100, 0.08),
-	('SP24', 'KM20', 30, 0.15),
-	('SP25', 'KM21', 70, 0.05),
-	('SP26', 'KM22', 1500, 0.04),
-	('SP27', 'KM23', 80, 0.20),
-	('SP28', 'KM24', 90, 0.12),
-	('SP29', 'KM25', 50, 0.18),
-	('SP30', 'KM26', 120, 0.10),
-	('SP31', 'KM27', 30, 0.11),
-	('SP32', 'KM28', 10, 0.25),
-	('SP33', 'KM29', 25, 0.07),
-	('SP34', 'KM30', 18, 0.09),
-	('SP35', 'KM02', 200, 0.05),
-	('SP36', 'KM02', 50, 0.07),
-	('SP37', 'KM08', 40, 0.10),
-	('SP38', 'KM12', 70, 0.06),
-	('SP39', 'KM16', 60, 0.05),
-	('SP40', 'KM18', 80, 0.08),
-	('SP41', 'KM21', 20, 0.10),
-	('SP42', 'KM22', 200, 0.04),
-	('SP43', 'KM24', 10, 0.12),
-	('SP44', 'KM26', 15, 0.09),
-	('SP45', 'KM27', 300, 0.03),
-	('SP46', 'KM28', 50, 0.08),
-	('SP47', 'KM29', 400, 0.02),
-	('SP48', 'KM30', 80, 0.07),
-	('SP49', 'KM05', 100, 0.06),
-	('SP50', 'KM03', 60, 0.05);
+-- 12. BẢNG CHITIETKM (Giữ nguyên như cũ vì không cần tính toán lại)
+INSERT INTO CHITIETKM (MASP, MAKM, SOLUONG, TILEGIAM) VALUES
+('SP01', 'KM02', 10, 0.1), ('SP02', 'KM02', 500, 0.2), ('SP03', 'KM03', 500, 0.05), ('SP04', 'KM03', 400, 0.07),
+('SP05', 'KM04', 200, 0.10), ('SP06', 'KM04', 150, 0.15), ('SP07', 'KM05', 50, 0.08), ('SP08', 'KM05', 100, 0.10),
+('SP09', 'KM06', 200, 0.12), ('SP10', 'KM06', 80, 0.10), ('SP11', 'KM07', 100, 0.05), ('SP12', 'KM08', 40, 0.20),
+('SP13', 'KM09', 60, 0.10), ('SP14', 'KM10', 300, 0.05), ('SP15', 'KM11', 150, 0.08), ('SP16', 'KM12', 200, 0.07),
+('SP17', 'KM13', 20, 0.12), ('SP18', 'KM14', 1000, 0.03), ('SP19', 'KM15', 800, 0.02), ('SP20', 'KM16', 60, 0.10),
+('SP21', 'KM17', 250, 0.06), ('SP22', 'KM18', 120, 0.09), ('SP23', 'KM19', 100, 0.08), ('SP24', 'KM20', 30, 0.15),
+('SP25', 'KM21', 70, 0.05), ('SP26', 'KM22', 1500, 0.04), ('SP27', 'KM23', 80, 0.20), ('SP28', 'KM24', 90, 0.12),
+('SP29', 'KM25', 50, 0.18), ('SP30', 'KM26', 120, 0.10), ('SP31', 'KM27', 30, 0.11), ('SP32', 'KM28', 10, 0.25),
+('SP33', 'KM29', 25, 0.07), ('SP34', 'KM30', 18, 0.09), ('SP35', 'KM02', 200, 0.05), ('SP36', 'KM02', 50, 0.07),
+('SP37', 'KM08', 40, 0.10), ('SP38', 'KM12', 70, 0.06), ('SP39', 'KM16', 60, 0.05), ('SP40', 'KM18', 80, 0.08),
+('SP41', 'KM21', 20, 0.10), ('SP42', 'KM22', 200, 0.04), ('SP43', 'KM24', 10, 0.12), ('SP44', 'KM26', 15, 0.09),
+('SP45', 'KM27', 300, 0.03), ('SP46', 'KM28', 50, 0.08), ('SP47', 'KM29', 400, 0.02), ('SP48', 'KM30', 80, 0.07),
+('SP49', 'KM05', 100, 0.06), ('SP50', 'KM03', 60, 0.05);
 GO
 
 -- 13. BẢNG DONDATHANG (Phụ thuộc: NHANVIEN, SANPHAM)
