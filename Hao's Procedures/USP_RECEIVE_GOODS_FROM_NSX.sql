@@ -4,9 +4,7 @@ go
 -- do cùng 1 nhà sản xuất gửi - do nhà sản xuất đó gửi phiếu này
 
 
-drop procedure if exists USP_RECEIVE_GOODS_FROM_NSX
-GO
-create procedure USP_RECEIVE_GOODS_FROM_NSX @v_received_items RECEIVED_ITEM READONLY
+create or alter procedure USP_RECEIVE_GOODS_FROM_NSX @v_received_items RECEIVED_ITEM READONLY
 AS
 BEGIN
 BEGIN TRY
@@ -37,8 +35,8 @@ BEGIN TRY
         declare @soluongtoida int
         declare @tonkhosaucapnhat int
         SELECT @sldat = SOLUONGDAT, @sldanhan = SOLUONGDANHAN, @Cur_MASP = MASP  from DONDATHANG  where mahd = @Cur_MAHD
-        SELECT @tonkhohientai = TONKHO, @soluongtoida = soluongtoida  from sanpham with (HOLDLOCK) where masp = @cur_masp
-        WAITFOR DELAY '00:00:05'
+        SELECT @tonkhohientai = TONKHO, @soluongtoida = soluongtoida  from sanpham where masp = @cur_masp
+
         SET @tonkhosaucapnhat = @tonkhohientai + @Cur_SL
         if @sldanhan + @Cur_SL > @sldat
         BEGIN
@@ -52,6 +50,7 @@ BEGIN TRY
             ROLLBACK TRAN
             Return
         end
+        WAITFOR DELAY '00:00:05'
         UPDATE  DONDATHANG
         set SOLUONGDANHAN = SOLUONGDANHAN + @Cur_SL
         where mahd = @Cur_MAHD
