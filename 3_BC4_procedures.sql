@@ -360,81 +360,73 @@ CREATE OR ALTER PROCEDURE USP_CANCEL_ORDER
 AS
 BEGIN
     SET NOCOUNT ON;
-
-    -- Kiểm tra tồn tại
-    IF NOT EXISTS (SELECT 1 FROM HOADON WHERE MAHD = @mahd)
-    BEGIN
-        PRINT N'Hóa đơn không tồn tại'
-        RETURN
-    END
-
     BEGIN TRY
         BEGIN TRANSACTION
-        DECLARE @cur_masp varchar(10)
-        DECLARE @cur_soluong int 
-        DECLARE @cur_makm varchar(10)
-        DECLARE @makh varchar(10)
-        DECLARE @mapg varchar(10)
-        DECLARE @nam_hoadon INT
+        IF NOT EXISTS (SELECT 1 FROM HOADON WHERE MAHD = @mahd)
+        BEGIN
+            PRINT N'Hóa đơn không tồn tại'
+            ROLLBACK TRANSACTION
+            RETURN
+        END
 
-        SELECT @makh = MAKH, @mapg = MAPG, @nam_hoadon = YEAR(NGAYLAP)
-        FROM HOADON WHERE MAHD = @mahd
+        DECLARE @cur_masp varchar(10), @cur_soluong int, @cur_makm varchar(10)
+        DECLARE @makh varchar(10), @mapg varchar(10)
+
+        SELECT @makh = MAKH, @mapg = MAPG FROM HOADON WHERE MAHD = @mahd
 
         IF @mapg IS NOT NULL
         BEGIN
-            UPDATE PHIEUGIAMGIA
-            SET TRANGTHAI = N'Chưa dùng'
-            WHERE MAPG = @mapg;
+            UPDATE PHIEUGIAMGIA SET TRANGTHAI = N'Chưa dùng' WHERE MAPG = @mapg;
         END
 
         DECLARE cur_chitietdon CURSOR LOCAL FOR 
-            SELECT MASP, SOLUONG, MAKM FROM CHITIETHOADON WHERE MAHD = @mahd;
+            SELECT MASP, SOLUONG, MAKM 
+            FROM CHITIETHOADON 
+            WHERE MAHD = @mahd
+            ORDER BY MASP; -- giải quyết deadlock
         
         OPEN cur_chitietdon
         FETCH NEXT FROM cur_chitietdon INTO @cur_masp, @cur_soluong, @cur_makm
 
         WHILE @@FETCH_STATUS = 0
         BEGIN
+            DECLARE @sl_tonkho_hientai int, @sl_tonkho_toida int
+            SELECT @sl_tonkho_hientai = tonkho, @sl_tonkho_toida = SOLUONGTOIDA 
+            FROM SANPHAM WITH (UPDLOCK)  -- giải quyết lost update, unrepeatable read
+            WHERE masp = @cur_masp
+
             IF @cur_makm IS NOT NULL
             BEGIN
-                DECLARE @Sl_Hoan_KM INT;
-                IF @cur_soluong > 3 SET @Sl_Hoan_KM = 3; ELSE SET @Sl_Hoan_KM = @cur_soluong;
-
+                DECLARE @Sl_Hoan_KM INT = CASE WHEN @cur_soluong > 3 THEN 3 ELSE @cur_soluong END;
                 UPDATE CHITIETKM 
                 SET SOLUONG = SOLUONG + @Sl_Hoan_KM
                 WHERE MAKM = @cur_makm AND MASP = @cur_masp;
             END
-            declare @SL_tonkho_hientai int
-            declare @sl_tonkho_toida int
-            select @sl_tonkho_hientai = tonkho, @sl_tonkho_toida = SOLUONGTOIDA from sanpham  where masp = @cur_masp
-            declare @SL_tonkho_saucapnhat int 
-            set @SL_tonkho_saucapnhat = @sl_tonkho_hientai  + @cur_soluong
-            if @SL_tonkho_saucapnhat > @sl_tonkho_toida 
+
+            DECLARE @SL_tonkho_saucapnhat int = @sl_tonkho_hientai + @cur_soluong
+            IF @SL_tonkho_saucapnhat > @sl_tonkho_toida 
             BEGIN
-                ROLLBACK tran
-                return
-            end
-            UPDATE SANPHAM 
-            SET TONKHO = @SL_tonkho_saucapnhat
-            WHERE MASP = @cur_masp;
-            DELETE FROM CHITIETHOADON 
-            WHERE MAHD = @mahd AND MASP = @cur_masp;
+                RAISERROR(N'Vượt quá tồn kho tối đa khi hoàn hàng', 16, 1)
+                ROLLBACK TRANSACTION
+                RETURN
+            END
+
+            UPDATE SANPHAM SET TONKHO = @SL_tonkho_saucapnhat WHERE MASP = @cur_masp;
+            
             FETCH NEXT FROM cur_chitietdon INTO @cur_masp, @cur_soluong, @cur_makm
         END
         
         CLOSE cur_chitietdon
         DEALLOCATE cur_chitietdon
+
+        DELETE FROM CHITIETHOADON WHERE MAHD = @mahd;
         DELETE FROM HOADON WHERE MAHD = @mahd; 
 
         COMMIT TRANSACTION
         PRINT N'Hủy đơn hàng thành công.'
     END TRY
     BEGIN CATCH
-        IF @@TRANCOUNT > 0 
-        BEGIN
-            ROLLBACK TRANSACTION;
-        END
-        
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
         DECLARE @ErrMsg NVARCHAR(4000) = ERROR_MESSAGE();
         RAISERROR(@ErrMsg, 16, 1);
     END CATCH
@@ -450,92 +442,94 @@ BEGIN
     )
 END
 GO
-create or alter procedure USP_RECEIVE_GOODS_FROM_NSX @v_received_items RECEIVED_ITEM READONLY
+CREATE OR ALTER PROCEDURE USP_RECEIVE_GOODS_FROM_NSX 
+    @v_received_items RECEIVED_ITEM READONLY
 AS
 BEGIN
-BEGIN TRY
-    BEGIN TRANSACTION 
-    DECLARE @MAPN varchar(10)
-    DECLARE @MANSX varchar(10)
-    DECLARE @Cur_MAHD varchar(10);
-        DECLARE @Cur_SL int;       
-        DECLARE @Cur_MASP VARCHAR(10);
-    SELECT TOP 1 @MANSX = SP.MANSX
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION 
+        
+        DECLARE @MAPN varchar(10), @MANSX varchar(10)
+        DECLARE @Cur_MAHD varchar(10), @Cur_SL int, @Cur_MASP VARCHAR(10);
+
+        SELECT TOP 1 @MANSX = SP.MANSX
         FROM @v_received_items L
         JOIN DONDATHANG DDH ON L.MAHD = DDH.MAHD
         JOIN SANPHAM SP ON DDH.MASP = SP.MASP;
-    SET @MAPN = 'PN' + LEFT(REPLACE(CAST(NEWID() AS VARCHAR(50)), '-', ''), 8);
-        
-        INSERT INTO PHIEUNHAPHANG (MAPN, MANSX)
-        VALUES (@MAPN, @MANSX);
-    DECLARE cur_HangNhap CURSOR FOR 
-        SELECT MAHD, SLNHANTHUCTE 
-        FROM @v_received_items;
-    OPEN cur_HangNhap;
-    FETCH NEXT FROM cur_HangNhap INTO @Cur_MAHD, @Cur_SL;
-    WHILE @@FETCH_STATUS = 0 
-    BEGIN
-        declare @sldanhan int 
-        declare @sldat int
-        declare @tonkhohientai INT
-        declare @soluongtoida int
-        declare @tonkhosaucapnhat int
-        SELECT @sldat = SOLUONGDAT, @sldanhan = SOLUONGDANHAN, @Cur_MASP = MASP  from DONDATHANG  where mahd = @Cur_MAHD
-        SELECT @tonkhohientai = TONKHO, @soluongtoida = soluongtoida  from sanpham where masp = @cur_masp
 
-        SET @tonkhosaucapnhat = @tonkhohientai + @Cur_SL
-        if @sldanhan + @Cur_SL > @sldat
-        BEGIN
-            RAISERROR(N'Lỗi: Số lượng nhập hàng vượt quá yêu cầu đặt', 16, 1);
-            ROLLBACK TRAN
-            Return
-        end
-        if @tonkhosaucapnhat > @soluongtoida 
-        BEGIN
-            RAISERROR(N'Lỗi: Số lượng nhập hàng vượt số lượng tối đa của sản phẩm ', 16, 1);
-            ROLLBACK TRAN
-            Return
-        end
-        WAITFOR DELAY '00:00:05'
-        UPDATE  DONDATHANG
-        set SOLUONGDANHAN = SOLUONGDANHAN + @Cur_SL
-        where mahd = @Cur_MAHD
-        if @sldanhan = 0
-        begin
-            UPDATE DONDATHANG
-            set trangthai = N'Đã giao một phần' where mahd = @Cur_MAHD
-        end
-        if @sldanhan + @cur_sl = @sldat
-        begin
-            UPDATE DONDATHANG
-            set trangthai = N'Đã giao đủ' where mahd = @Cur_MAHD
-        end
-        INSERT INTO CHITIETPHIEUNHAP(MAHD, MAPN, SLNHANTHUCTE)
-            VALUES (@Cur_MAHD, @MAPN, @Cur_SL);
-        UPDATE SANPHAM
-        SET TONKHO = @tonkhosaucapnhat
-        WHERE MASP = @Cur_MASP;
+        SET @MAPN = 'PN' + LEFT(REPLACE(CAST(NEWID() AS VARCHAR(50)), '-', ''), 8);
+        INSERT INTO PHIEUNHAPHANG (MAPN, MANSX) VALUES (@MAPN, @MANSX);
+
+        DECLARE cur_HangNhap CURSOR LOCAL FOR 
+            SELECT MAHD, SLNHANTHUCTE 
+            FROM @v_received_items
+            ORDER BY MAHD; -- giải quyết Deadlock
+
+        OPEN cur_HangNhap;
         FETCH NEXT FROM cur_HangNhap INTO @Cur_MAHD, @Cur_SL;
-    END
-    CLOSE cur_HangNhap;
-    DEALLOCATE cur_HangNhap;
-    COMMIT TRANSACTION
-    END TRY
-    BEGIN CATCH
-        IF CURSOR_STATUS('global','cur_HangNhap') >= -1
+
+        WHILE @@FETCH_STATUS = 0 
         BEGIN
-            CLOSE cur_HangNhap;
-            DEALLOCATE cur_HangNhap;
+            DECLARE @sldanhan int, @sldat int
+            SELECT @sldat = SOLUONGDAT, @sldanhan = SOLUONGDANHAN, @Cur_MASP = MASP  
+            FROM DONDATHANG WITH (UPDLOCK) -- giải quyết lost update, unrepeatable read
+            WHERE mahd = @Cur_MAHD
+
+            DECLARE @tonkhohientai INT, @soluongtoida int
+            SELECT @tonkhohientai = TONKHO, @soluongtoida = soluongtoida  
+            FROM SANPHAM WITH (UPDLOCK) -- giải quyết lost update, unrepeatable read
+            WHERE masp = @Cur_MASP
+            --Print @sldat 
+            --Print @tonkhohientai
+            --print @sldanhan
+            IF @sldanhan + @Cur_SL > @sldat
+            BEGIN
+                RAISERROR(N'Số lượng nhập hàng vượt quá yêu cầu đặt', 16, 1);
+                ROLLBACK TRAN; RETURN;
+            END
+
+            DECLARE @tonkhosaucapnhat int = @tonkhohientai + @Cur_SL
+            IF @tonkhosaucapnhat > @soluongtoida 
+            BEGIN
+                RAISERROR(N'Số lượng nhập hàng vượt số lượng tối đa của sản phẩm', 16, 1);
+                ROLLBACK TRAN; RETURN;
+            END
+            --WAITFOR DELAY '00:00:05'
+            --SELECT @sldat = SOLUONGDAT, @sldanhan = SOLUONGDANHAN, @Cur_MASP = MASP  
+            --FROM DONDATHANG-- WITH (UPDLOCK) -- giải quyết lost update, unrepeatable read
+            --WHERE mahd = @Cur_MAHD
+            --SELECT @tonkhohientai = TONKHO, @soluongtoida = soluongtoida  
+            --FROM SANPHAM --WITH (UPDLOCK) -- giải quyết lost update, unrepeatable read
+            --WHERE masp = @Cur_MASP
+            --Print @sldat 
+            --Print @tonkhohientai
+            --print @sldanhan
+            UPDATE DONDATHANG
+            SET SOLUONGDANHAN = SOLUONGDANHAN + @Cur_SL,
+                trangthai = CASE WHEN SOLUONGDANHAN + @Cur_SL = @sldat THEN N'Đã giao đủ' ELSE N'Đã giao một phần' END
+            WHERE mahd = @Cur_MAHD
+
+            INSERT INTO CHITIETPHIEUNHAP(MAHD, MAPN, SLNHANTHUCTE) VALUES (@Cur_MAHD, @MAPN, @Cur_SL);
+
+            UPDATE SANPHAM SET TONKHO = @tonkhosaucapnhat WHERE MASP = @Cur_MASP;
+
+            FETCH NEXT FROM cur_HangNhap INTO @Cur_MAHD, @Cur_SL;
         END
 
-        -- Kiểm tra xem có transaction nào đang chạy không trước khi rollback
+        CLOSE cur_HangNhap;
+        DEALLOCATE cur_HangNhap;
+        COMMIT TRANSACTION
+    END TRY
+    BEGIN CATCH
         IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
-
         DECLARE @ErrMsg NVARCHAR(4000) = ERROR_MESSAGE();
         RAISERROR(@ErrMsg, 16, 1);
     END CATCH
 END
 GO
+
 --7
 CREATE OR ALTER PROCEDURE USP_REPORT_LOW_STOCK_ITEMS
     @TY_LE_CANH_BAO FLOAT = 0.7
