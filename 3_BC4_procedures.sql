@@ -1037,7 +1037,7 @@ BEGIN
     BEGIN TRANSACTION;
     
     BEGIN TRY
-        IF NOT EXISTS (SELECT 1 FROM DONDATHANG WHERE MAHD = @MaHD)
+        IF NOT EXISTS (SELECT 1 FROM DONDATHANG WITH (UPDLOCK, ROWLOCK) WHERE MAHD = @MaHD)
         BEGIN
             RAISERROR(N'Lỗi: Mã đơn đặt hàng %s không tồn tại.', 16, 1, @MAHD);
             ROLLBACK TRANSACTION;
@@ -1048,7 +1048,7 @@ BEGIN
         DECLARE @TrangThai NVARCHAR(30);
 
         SELECT @SoLuongDaNhan = SOLUONGDANHAN, @TrangThai = TRANGTHAI
-        FROM DONDATHANG WITH (UPDLOCK, ROWLOCK)
+        FROM DONDATHANG
         WHERE MAHD = @MaHD
 
         -- Nếu giao rồi hoặc giao 1 phần thì không hủy đơn được
@@ -1077,7 +1077,7 @@ CREATE OR ALTER PROCEDURE USP_REPORT_DAILY_SUMMARY
 AS
 BEGIN
     SET NOCOUNT ON;
-    SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE; -- Chống đọc bẩn, đọc không lặp lại, mất cập nhật
 
     BEGIN TRANSACTION
     BEGIN TRY
@@ -1119,47 +1119,56 @@ BEGIN
     SET NOCOUNT ON;
     SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
 
-    BEGIN TRANSACTION;
-
     BEGIN TRY
+        BEGIN TRANSACTION;
+
         DECLARE @CurrentDate DATE = GETDATE();
         DECLARE @CurrentYear INT = YEAR(@CurrentDate);
         DECLARE @CurrentMonth INT = MONTH(@CurrentDate);
 
         -- CẬP NHẬT CẤP ĐỘ THẺ
-        DECLARE @TongTienKH TABLE (
-            MAKH VARCHAR(10),
+        CREATE TABLE #TongTienKH (
+            MAKH VARCHAR(10) PRIMARY KEY,
             TONGTIEN INT
         );
 
-        INSERT INTO @TongTienKH(MAKH, TONGTIEN)
+        INSERT INTO #TongTienKH(MAKH, TONGTIEN)
         SELECT MAKH, SUM(SOTIENDATIEU)
-        FROM SOTIENTIEU
-        WHERE @CurrentYear - NAM <= 1
+        FROM SOTIENTIEU -- Chi phí bỏ ra không đáng để lock với sai lệch nhỏ
+        WHERE @CurrentYear - NAM BETWEEN 0 AND 1
         GROUP BY MAKH
 
-        UPDATE KHTV
-        SET MACAPDO = (
-            SELECT TOP 1 CD.MACAPDO
-            FROM CAPDOTHE CD
-            WHERE TT.TONGTIEN >= CD.TONGTIENTOITHIEU
-            ORDER BY CD.TONGTIENTOITHIEU DESC
+        ; WITH CalculatedRanks AS (
+            SELECT
+                TT.MAKH,
+                (
+                    SELECT TOP 1 CD.MACAPDO
+                    FROM CAPDOTHE CD -- Khong doi
+                    WHERE TT.TONGTIEN >= CD.TONGTIENTOITHIEU
+                    ORDER BY CD.TONGTIENTOITHIEU DESC
+                ) AS CapDoMoi
+            FROM #TongTienKH TT
         )
+
+        UPDATE KHTV
+        SET MACAPDO = C.CapDoMoi
         FROM KH_THANHVIEN KHTV
-        JOIN @TongTienKH TT ON KHTV.MAKH = TT.MAKH;
+        JOIN CalculatedRanks C ON KHTV.MAKH = C.MAKH
+        WHERE KHTV.MACAPDO <> C.CapDoMoi;
 
         SET @SoLuongThanhVienCapNhat = @@ROWCOUNT;
 
+        DROP TABLE #TongTienKH;
+
         -- TẶNG PHIẾU GIẢM GIÁ SINH NHẬT
         DECLARE @MaxCurrentId INT;
-        SELECT @MaxCurrentId = ISNULL(MAX(CAST(RIGHT(MAPG, 8) AS INT)), 0)
-        FROM PHIEUGIAMGIA WITH (XLOCK, HOLDLOCK)
-        WHERE MAPG LIKE 'PG[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]';
+        SELECT @MaxCurrentId = ISNULL(MAX(CAST(RIGHT(MAPG, 2) AS INT)), 0)
+        FROM PHIEUGIAMGIA WITH (UPDLOCK, HOLDLOCK) -- Thực tế không ai tạo mã như vậy
+        WHERE MAPG LIKE 'PG[0-9][0-9]';
         
         INSERT INTO PHIEUGIAMGIA(MAPG, PHANTRAMGIAM, TRANGTHAI, MAKH)
         SELECT
-            -- GEMINI CHỈ
-            'PG' + RIGHT('00000000' + CAST(@MaxCurrentId + ROW_NUMBER() OVER(ORDER BY MAKH) AS VARCHAR(10)), 8),            
+            'PG' + RIGHT('00' + CAST(@MaxCurrentId + ROW_NUMBER() OVER(ORDER BY MAKH) AS VARCHAR(4)), 2),            
             CD.PHANTRAMGIAMSN,
             N'Chưa dùng',
             KHTV.MAKH
@@ -1171,7 +1180,8 @@ BEGIN
             AND NOT EXISTS (
                 SELECT 1 FROM PHIEUGIAMGIA PG
                 WHERE KHTV.MAKH = PG.MAKH
-                AND MONTH(GETDATE()) = @CurrentMonth
+                AND YEAR(PG.NGAYTAO) = @CurrentYear
+                AND MONTH(PG.NGAYTAO) = @CurrentMonth
             );
         
         COMMIT TRANSACTION;
@@ -1180,8 +1190,10 @@ BEGIN
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        IF OBJECT_ID('tempdb..#TongTienKH') IS NOT NULL DROP TABLE #TongTienKH;
         DECLARE @error NVARCHAR(4000) = ERROR_MESSAGE();
         RAISERROR(@error, 16, 1)
     END CATCH
 
 END;
+GO

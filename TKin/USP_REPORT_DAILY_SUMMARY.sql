@@ -8,7 +8,8 @@ CREATE OR ALTER PROCEDURE USP_REPORT_DAILY_SUMMARY
 AS
 BEGIN
     SET NOCOUNT ON;
-    SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
     BEGIN TRANSACTION
     BEGIN TRY
 
@@ -24,7 +25,20 @@ BEGIN
         FROM HOADON
         WHERE NGAYLAP = CAST(@CurrentDate AS DATE);
 
-        -- Conflict nếu insert  dòng hóa đơn
+        SELECT 
+            N'Báo Cáo Ngày' AS TieuDe,
+            @CurrentDate AS Ngay,
+            @TongKH AS TongKhachHang,
+            FORMAT(@TongDT, '#,##0') + ' VND' AS TongDoanhThu;
+
+        WAITFOR DELAY '00:00:05';
+
+
+        SELECT 
+            @TongKH = ISNULL(COUNT(DISTINCT MAKH),0),
+            @TongDT = ISNULL(SUM(TONGTIEN), 0)
+        FROM HOADON
+        WHERE NGAYLAP = CAST(@CurrentDate AS DATE);
 
         SELECT 
             N'Báo Cáo Ngày' AS TieuDe,
@@ -32,18 +46,6 @@ BEGIN
             @TongKH AS TongKhachHang,
             FORMAT(@TongDT, '#,##0') + ' VND' AS TongDoanhThu;
 
-        SELECT 
-            SP.MASP, 
-            SP.TENSANPHAM, 
-            SUM(CTHD.SOLUONG) AS SoLuongBan, 
-            COUNT(DISTINCT HD.MAKH) AS SoKhachMua,
-            FORMAT(SUM(CTHD.THANHTIEN), '#,##0') AS DoanhThuSanPham
-        FROM SANPHAM SP
-        JOIN CHITIETHOADON CTHD ON CTHD.MASP = SP.MASP
-        JOIN HOADON HD ON CTHD.MAHD = HD.MAHD
-        WHERE HD.NGAYLAP = CAST(@CurrentDate AS DATE)
-        GROUP BY SP.MASP, SP.TENSANPHAM
-        ORDER BY SoLuongBan DESC;
         COMMIT TRANSACTION
 
     END TRY
@@ -54,49 +56,12 @@ BEGIN
         RAISERROR(@error, 16, 1)
     END CATCH
 END
-
 GO
 
-SELECT * FROM KHACHHANG
-SELECT * FROM SANPHAM
 
-DECLARE @Today DATE = GETDATE();
-DECLARE @MaHD1 VARCHAR(10) = 'HD_TEST_01';
-DECLARE @MaHD2 VARCHAR(10) = 'HD_TEST_02';
+SELECT * FROM HOADON
 
--- Clean data cũ
-DELETE FROM CHITIETHOADON WHERE MAHD IN (@MaHD1, @MaHD2);
-DELETE FROM HOADON WHERE MAHD IN (@MaHD1, @MaHD2);
-
--- Insert dữ liệu cho ngày hôm nay
-INSERT INTO HOADON (MAHD, NGAYLAP, MANV, MAKH) VALUES
-(@MaHD1, @Today, 'NV03', 'KH01'), 
-(@MaHD2, @Today, 'NV03', 'KH03');
-
-INSERT INTO CHITIETHOADON (MAHD, MASP, SOLUONG, THANHTIEN) VALUES
-(@MaHD1, 'SP01', 10, 0), -- 10 Sữa
-(@MaHD1, 'SP02', 2, 0),  -- 2 Chảo
-(@MaHD2, 'SP01', 5, 0);  -- 5 Sữa
-
-SELECT 
-    HD.MAHD, 
-    SP.MASP, 
-    SUM(CTHD.SOLUONG) AS SoLuong, 
-    -- Nếu không có phiếu giảm giá thì hiện chữ 'Không có' cho đẹp
-    ISNULL(CTKM.TILEGIAM, 0) AS TRANGTHAI 
-FROM HOADON HD
-JOIN CHITIETHOADON CTHD ON HD.MAHD = CTHD.MAHD
-JOIN SANPHAM SP ON SP.MASP = CTHD.MASP
--- Dùng LEFT JOIN để lấy cả những hóa đơn không có mã giảm giá
-LEFT JOIN KHUYENMAI KM ON km.MAKM = CTHD.MAKM
-LEFT JOIN CHITIETKM CTKM ON KM.MAKM = CTKM.MAKM AND CTKM.MASP = SP.MASP
-WHERE HD.NGAYLAP = CAST(GETDATE() AS DATE)
-GROUP BY 
-    HD.MAHD, 
-    SP.MASP, 
-    CTKM.TILEGIAM
-ORDER BY HD.MAHD;
-
--- Chạy Procedure
-EXEC USP_REPORT_DAILY_SUMMARY;
+EXEC USP_REPORT_DAILY_SUMMARY
 GO
+
+SELECT * FROM HOADON

@@ -65,18 +65,18 @@ INSERT INTO KH_THANHVIEN (MAKH, NGAYDANGKY, NGAYSINH, MANV, MACAPDO) VALUES
 GO
 
 -- 5. BẢNG PHIEUGIAMGIA (Phụ thuộc: KH_THANHVIEN)
-INSERT INTO PHIEUGIAMGIA (MAPG, PHANTRAMGIAM, TRANGTHAI, MAKH) VALUES
-('PG01', 0.1, N'Chưa dùng', 'KH01'),
-('PG02', 0.2, N'Đã dùng', 'KH02'),
-('PG03', 0.1, N'Đã dùng', 'KH04'),
-('PG04', 0.1, N'Chưa dùng', 'KH05'),
-('PG05', 0.15, N'Đã dùng', 'KH06'),
-('PG06', 0.2, N'Chưa dùng', 'KH08'),
-('PG07', 0.1, N'Đã dùng', 'KH09'),
-('PG08', 0.1, N'Chưa dùng', 'KH10'),
-('PG09', 0.15, N'Chưa dùng', 'KH12'),
-('PG10', 0.1, N'Chưa dùng', 'KH13'),
-('PG12', 0.2, N'Chưa dùng', 'KH02');
+INSERT INTO PHIEUGIAMGIA (MAPG, PHANTRAMGIAM, TRANGTHAI, MAKH, NGAYTAO) VALUES
+('PG01', 0.1, N'Chưa dùng', 'KH01', '2024-01-01'),
+('PG02', 0.2, N'Đã dùng', 'KH02', '2024-01-01'),
+('PG03', 0.1, N'Đã dùng', 'KH04', '2024-01-01'),
+('PG04', 0.1, N'Chưa dùng', 'KH05', '2024-01-01'),
+('PG05', 0.15, N'Đã dùng', 'KH06', '2024-01-01'),
+('PG06', 0.2, N'Chưa dùng', 'KH08', '2024-01-01'),
+('PG07', 0.1, N'Đã dùng', 'KH09', '2024-01-01'),
+('PG08', 0.1, N'Chưa dùng', 'KH10', '2024-01-01'),
+('PG09', 0.15, N'Chưa dùng', 'KH12', '2024-01-01'),
+('PG10', 0.1, N'Chưa dùng', 'KH13', '2024-01-01'),
+('PG12', 0.2, N'Chưa dùng', 'KH02', '2024-01-01');
 GO
 
 -- 6. BẢNG SOTIENTIEU (Phụ thuộc: KH_THANHVIEN)
@@ -353,7 +353,7 @@ INSERT INTO HOADON (MAHD, NGAYLAP, TONGTIEN, MANV, MAPG, MAKH) VALUES
 ('HD20', '2024-11-20', 2040000, 'NV03', NULL, 'KH06'),
 ('HD21', GETDATE(), 0, 'NV03', NULL, 'KH01'),
 ('HD22', GETDATE(), 0, 'NV03', 'PG01', 'KH02'),
-('HD23', GETDATE(), 0, 'NV03', 'PG01', 'KH03');
+('HD23', GETDATE(), 0, 'NV03', NULL, 'KH03');
 GO
 
 INSERT INTO CHITIETHOADON
@@ -380,7 +380,12 @@ VALUES
 	('HD10', 'SP17', 1, 0, NULL),
 	('HD10', 'SP18', 2, 0, 'KM14'),
 	('HD01', 'SP35', 3, 0, 'KM02'),
-	('HD03', 'SP50', 2, 0, 'KM03');
+	('HD03', 'SP50', 2, 0, 'KM03'),
+	('HD21', 'SP01', 10, 0, NULL),
+	('HD21', 'SP02', 5, 0, NULL),
+	('HD22', 'SP01', 2, 0, NULL),
+	('HD22', 'SP03', 1, 0, 'KM01'),
+	('HD23', 'SP05', 1, 0, NULL);
 GO
 
 UPDATE CTHD

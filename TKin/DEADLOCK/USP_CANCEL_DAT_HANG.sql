@@ -6,6 +6,55 @@ GO
 
 
 -- Bộ phận quản lý kho hàng
+-- CREATE OR ALTER PROCEDURE USP_CANCEL_DAT_HANG_DEADLOCK
+--     @MaHD VARCHAR(10)
+-- AS
+-- BEGIN
+--     SET NOCOUNT ON;
+--     SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+--     BEGIN TRANSACTION;
+    
+--     BEGIN TRY
+--         IF NOT EXISTS (SELECT 1 FROM DONDATHANG WHERE MAHD = @MaHD)
+--         BEGIN
+--             RAISERROR(N'Lỗi: Mã đơn đặt hàng %s không tồn tại.', 16, 1, @MAHD);
+--             ROLLBACK TRANSACTION;
+--             RETURN;
+--         END
+
+--         DECLARE @SoLuongDaNhan INT;
+--         DECLARE @TrangThai NVARCHAR(30);
+
+--         SELECT @SoLuongDaNhan = SOLUONGDANHAN, @TrangThai = TRANGTHAI
+--         FROM DONDATHANG WITH (HOLDLOCK)
+--         WHERE MAHD = @MaHD
+
+--         -- Nếu giao rồi hoặc giao 1 phần thì không hủy đơn được
+--         IF @SoLuongDaNhan > 0 OR @TrangThai <> N'Chưa giao' 
+--         BEGIN
+--             RAISERROR(N'Lỗi: Không thể hủy đơn hàng đã bắt đầu nhập kho hoặc đã hoàn tất.', 16, 1);
+--             ROLLBACK TRANSACTION;
+--             RETURN;
+--         END
+
+--         -- Cập nhật thêm số lượng đã nhận hoặc trạng thái
+--         PRINT N'Cancel đặt hàng đang chờ 5 giây, vui lòng tạo deadlock...'
+--         WAITFOR DELAY '00:00:05'
+--         DELETE FROM DONDATHANG WHERE MAHD = @MaHD
+
+--         COMMIT TRANSACTION
+--         PRINT N'Đã hủy (xóa) đơn đặt hàng ' + @MAHD + N' thành công.';
+--     END TRY
+
+--     BEGIN CATCH
+--         ROLLBACK TRANSACTION;
+--         DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+--         RAISERROR(@ErrorMessage, 16, 1);
+--     END CATCH;
+-- END
+-- GO
+
+
 CREATE OR ALTER PROCEDURE USP_CANCEL_DAT_HANG_DEADLOCK
     @MaHD VARCHAR(10)
 AS
@@ -15,7 +64,7 @@ BEGIN
     BEGIN TRANSACTION;
     
     BEGIN TRY
-        IF NOT EXISTS (SELECT 1 FROM DONDATHANG WHERE MAHD = @MaHD)
+        IF NOT EXISTS (SELECT 1 FROM DONDATHANG WITH (UPDLOCK, ROWLOCK)  WHERE MAHD = @MaHD)
         BEGIN
             RAISERROR(N'Lỗi: Mã đơn đặt hàng %s không tồn tại.', 16, 1, @MAHD);
             ROLLBACK TRANSACTION;
@@ -26,7 +75,7 @@ BEGIN
         DECLARE @TrangThai NVARCHAR(30);
 
         SELECT @SoLuongDaNhan = SOLUONGDANHAN, @TrangThai = TRANGTHAI
-        FROM DONDATHANG WITH (HOLDLOCK)
+        FROM DONDATHANG
         WHERE MAHD = @MaHD
 
         -- Nếu giao rồi hoặc giao 1 phần thì không hủy đơn được
@@ -47,7 +96,7 @@ BEGIN
     END TRY
 
     BEGIN CATCH
-        ROLLBACK TRANSACTION;
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
         DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
         RAISERROR(@ErrorMessage, 16, 1);
     END CATCH;
