@@ -6,7 +6,7 @@ GO
 
 
 -- Bộ phận quản lý kho hàng
--- CREATE OR ALTER PROCEDURE USP_CANCEL_DAT_HANG_DEADLOCK
+-- CREATE OR ALTER PROCEDURE USP_CANCEL_DAT_HANG_PHANTOM
 --     @MaHD VARCHAR(10)
 -- AS
 -- BEGIN
@@ -22,13 +22,17 @@ GO
 --             RETURN;
 --         END
 
+--         WAITFOR DELAY '00:00:05'
+
+
 --         DECLARE @SoLuongDaNhan INT;
 --         DECLARE @TrangThai NVARCHAR(30);
 
 --         SELECT @SoLuongDaNhan = SOLUONGDANHAN, @TrangThai = TRANGTHAI
---         FROM DONDATHANG WITH (HOLDLOCK)
+--         FROM DONDATHANG
 --         WHERE MAHD = @MaHD
 
+--         PRINT @SOLUONGDANHAN
 --         -- Nếu giao rồi hoặc giao 1 phần thì không hủy đơn được
 --         IF @SoLuongDaNhan > 0 OR @TrangThai <> N'Chưa giao' 
 --         BEGIN
@@ -37,13 +41,17 @@ GO
 --             RETURN;
 --         END
 
+--         IF NOT EXISTS (SELECT 1 FROM DONDATHANG WHERE MAHD = @MaHD)
+--         BEGIN
+--             RAISERROR(N'Lỗi 2: Mã đơn đặt hàng %s không tồn tại.', 16, 1, @MAHD);
+--             ROLLBACK TRANSACTION;
+--             RETURN;
+--         END
 --         -- Cập nhật thêm số lượng đã nhận hoặc trạng thái
---         PRINT N'Cancel đặt hàng đang chờ 5 giây, vui lòng tạo deadlock...'
---         WAITFOR DELAY '00:00:05'
 --         DELETE FROM DONDATHANG WHERE MAHD = @MaHD
 
---         COMMIT TRANSACTION
 --         PRINT N'Đã hủy (xóa) đơn đặt hàng ' + @MAHD + N' thành công.';
+--         COMMIT TRANSACTION
 --     END TRY
 
 --     BEGIN CATCH
@@ -54,8 +62,7 @@ GO
 -- END
 -- GO
 
-
-CREATE OR ALTER PROCEDURE USP_CANCEL_DAT_HANG_DEADLOCK
+CREATE OR ALTER PROCEDURE USP_CANCEL_DAT_HANG_PHANTOM
     @MaHD VARCHAR(10)
 AS
 BEGIN
@@ -64,12 +71,14 @@ BEGIN
     BEGIN TRANSACTION;
     
     BEGIN TRY
-        IF NOT EXISTS (SELECT 1 FROM DONDATHANG WITH (UPDLOCK, ROWLOCK)  WHERE MAHD = @MaHD)
+        IF NOT EXISTS (SELECT 1 FROM DONDATHANG WITH (UPDLOCK, ROWLOCK) WHERE MAHD = @MaHD)
         BEGIN
             RAISERROR(N'Lỗi: Mã đơn đặt hàng %s không tồn tại.', 16, 1, @MAHD);
             ROLLBACK TRANSACTION;
             RETURN;
         END
+
+        WAITFOR DELAY '00:00:05'
 
         DECLARE @SoLuongDaNhan INT;
         DECLARE @TrangThai NVARCHAR(30);
@@ -86,9 +95,13 @@ BEGIN
             RETURN;
         END
 
-        -- Cập nhật thêm số lượng đã nhận hoặc trạng thái
-        PRINT N'Cancel đặt hàng đang chờ 5 giây, vui lòng tạo deadlock...'
-        WAITFOR DELAY '00:00:05'
+        IF NOT EXISTS (SELECT 1 FROM DONDATHANG WHERE MAHD = @MaHD)
+        BEGIN
+            RAISERROR(N'Lỗi 2: Mã đơn đặt hàng %s không tồn tại.', 16, 1, @MAHD);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
         DELETE FROM DONDATHANG WHERE MAHD = @MaHD
 
         COMMIT TRANSACTION

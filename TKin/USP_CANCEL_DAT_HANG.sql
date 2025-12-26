@@ -15,7 +15,7 @@ BEGIN
     BEGIN TRANSACTION;
     
     BEGIN TRY
-        IF NOT EXISTS (SELECT 1 FROM DONDATHANG WHERE MAHD = @MaHD)
+        IF NOT EXISTS (SELECT 1 FROM DONDATHANG WITH (UPDLOCK, ROWLOCK) WHERE MAHD = @MaHD)
         BEGIN
             RAISERROR(N'Lỗi: Mã đơn đặt hàng %s không tồn tại.', 16, 1, @MAHD);
             ROLLBACK TRANSACTION;
@@ -37,8 +37,6 @@ BEGIN
             RETURN;
         END
 
-        -- Cập nhật thêm số lượng đã nhận hoặc trạng thái
-
         DELETE FROM DONDATHANG WHERE MAHD = @MaHD
 
         COMMIT TRANSACTION
@@ -46,7 +44,7 @@ BEGIN
     END TRY
 
     BEGIN CATCH
-        ROLLBACK TRANSACTION;
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
         DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
         RAISERROR(@ErrorMessage, 16, 1);
     END CATCH;
