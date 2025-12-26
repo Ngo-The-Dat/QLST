@@ -392,7 +392,7 @@ BEGIN
         BEGIN
             DECLARE @sl_tonkho_hientai int, @sl_tonkho_toida int
             SELECT @sl_tonkho_hientai = tonkho, @sl_tonkho_toida = SOLUONGTOIDA 
-            FROM SANPHAM WITH (UPDLOCK)  -- giải quyết lost update, unrepeatable read
+            FROM SANPHAM WITH (UPDLOCK,HOLDLOCK)  -- giải quyết lost update, unrepeatable read
             WHERE masp = @cur_masp
 
             IF @cur_makm IS NOT NULL
@@ -463,9 +463,10 @@ BEGIN
         INSERT INTO PHIEUNHAPHANG (MAPN, MANSX) VALUES (@MAPN, @MANSX);
 
         DECLARE cur_HangNhap CURSOR LOCAL FOR 
-            SELECT MAHD, SLNHANTHUCTE 
-            FROM @v_received_items
-            ORDER BY MAHD; -- giải quyết Deadlock
+            SELECT L.MAHD, L.SLNHANTHUCTE
+            FROM @v_received_items L
+            JOIN DONDATHANG D ON L.MAHD = D.MAHD 
+            ORDER BY D.MASP; -- Giải quyết deadlock
 
         OPEN cur_HangNhap;
         FETCH NEXT FROM cur_HangNhap INTO @Cur_MAHD, @Cur_SL;
@@ -474,12 +475,12 @@ BEGIN
         BEGIN
             DECLARE @sldanhan int, @sldat int
             SELECT @sldat = SOLUONGDAT, @sldanhan = SOLUONGDANHAN, @Cur_MASP = MASP  
-            FROM DONDATHANG WITH (UPDLOCK) -- giải quyết lost update, unrepeatable read
+            FROM DONDATHANG WITH (UPDLOCK, HOLDLOCK) -- giải quyết lost update, unrepeatable read
             WHERE mahd = @Cur_MAHD
 
             DECLARE @tonkhohientai INT, @soluongtoida int
             SELECT @tonkhohientai = TONKHO, @soluongtoida = soluongtoida  
-            FROM SANPHAM WITH (UPDLOCK) -- giải quyết lost update, unrepeatable read
+            FROM SANPHAM WITH (UPDLOCK, HOLDLOCK) -- giải quyết lost update, unrepeatable read
             WHERE masp = @Cur_MASP
             --Print @sldat 
             --Print @tonkhohientai
@@ -496,7 +497,7 @@ BEGIN
                 RAISERROR(N'Số lượng nhập hàng vượt số lượng tối đa của sản phẩm', 16, 1);
                 ROLLBACK TRAN; RETURN;
             END
-            --WAITFOR DELAY '00:00:05'
+            WAITFOR DELAY '00:00:05'
             --SELECT @sldat = SOLUONGDAT, @sldanhan = SOLUONGDANHAN, @Cur_MASP = MASP  
             --FROM DONDATHANG-- WITH (UPDLOCK) -- giải quyết lost update, unrepeatable read
             --WHERE mahd = @Cur_MAHD
@@ -529,6 +530,7 @@ BEGIN
     END CATCH
 END
 GO
+
 
 --7
 CREATE OR ALTER PROCEDURE USP_REPORT_LOW_STOCK_ITEMS
