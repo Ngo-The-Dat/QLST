@@ -288,7 +288,7 @@ INSERT INTO DONDATHANG (MAHD, NGAYLAP, SOLUONGDAT, SOLUONGDANHAN, TRANGTHAI, MAN
 ('DDH08', '2024-09-10', 30, 30, N'Đã giao đủ', 'NV02', 'SP08'),
 ('DDH09', '2024-10-01', 120, 120, N'Đã giao đủ', 'NV02', 'SP09'),
 ('DDH10', '2024-10-15', 60, 60, N'Đã giao đủ', 'NV02', 'SP10'),
-('DDH11', '2024-11-10', 120, 60, N'Đã giao một phần', 'NV02', 'SP11');
+('DDH11', '2024-11-10', 120, 60, N'Đã giao một phần', 'NV02', 'SP11'),
 ('DDH12', '2024-11-15', 100, 100, N'Đã giao đủ', 'NV02', 'SP40');
 GO
 
@@ -322,7 +322,7 @@ VALUES
 	('DDH08', 'PN06', 30),
 	('DDH09', 'PN07', 120),
 	('DDH10', 'PN08', 60),
-	('DDH11', 'PN09', 60);
+	('DDH11', 'PN09', 60),
 	('DDH12', 'PN10', 100);
 GO
 
