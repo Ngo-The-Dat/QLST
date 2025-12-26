@@ -1100,18 +1100,6 @@ BEGIN
             @TongKH AS TongKhachHang,
             FORMAT(@TongDT, '#,##0') + ' VND' AS TongDoanhThu;
 
-        SELECT 
-            SP.MASP, 
-            SP.TENSANPHAM, 
-            SUM(CTHD.SOLUONG) AS SoLuongBan, 
-            COUNT(DISTINCT HD.MAKH) AS SoKhachMua,
-            FORMAT(SUM(CTHD.THANHTIEN), '#,##0') AS DoanhThuSanPham
-        FROM SANPHAM SP
-        JOIN CHITIETHOADON CTHD ON CTHD.MASP = SP.MASP
-        JOIN HOADON HD ON CTHD.MAHD = HD.MAHD
-        WHERE HD.NGAYLAP = CAST(@CurrentDate AS DATE)
-        GROUP BY SP.MASP, SP.TENSANPHAM
-        ORDER BY SoLuongBan DESC;
         COMMIT TRANSACTION
 
     END TRY
@@ -1165,7 +1153,7 @@ BEGIN
         -- TẶNG PHIẾU GIẢM GIÁ SINH NHẬT
         DECLARE @MaxCurrentId INT;
         SELECT @MaxCurrentId = ISNULL(MAX(CAST(RIGHT(MAPG, 8) AS INT)), 0)
-        FROM PHIEUGIAMGIA 
+        FROM PHIEUGIAMGIA WITH (XLOCK, HOLDLOCK)
         WHERE MAPG LIKE 'PG[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]';
         
         INSERT INTO PHIEUGIAMGIA(MAPG, PHANTRAMGIAM, TRANGTHAI, MAKH)
@@ -1191,7 +1179,7 @@ BEGIN
 
     END TRY
     BEGIN CATCH
-        ROLLBACK TRANSACTION;
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
         DECLARE @error NVARCHAR(4000) = ERROR_MESSAGE();
         RAISERROR(@error, 16, 1)
     END CATCH

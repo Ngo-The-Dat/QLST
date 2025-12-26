@@ -277,20 +277,19 @@ GO
 
 -- 13. BẢNG DONDATHANG (Phụ thuộc: NHANVIEN, SANPHAM)
 -- Đơn đặt hàng từ nhà cung cấp
-INSERT INTO DONDATHANG
-	(MAHD, NGAYLAP, SOLUONGDAT, SOLUONGDANHAN, TRANGTHAI, MANV, MASP)
-VALUES
-	('DDH01', '2024-05-01', 200, 200, N'Đã giao đủ', 'NV02', 'SP01'), -- PN01
-	('DDH02', '2024-06-01', 100, 0, N'Chưa giao', 'NV02', 'SP02'),
-	('DDH03', '2024-07-01', 100, 100, N'Đã giao đủ', 'NV02', 'SP03'), -- PN02
-	('DDH04', '2024-07-05', 50, 50, N'Đã giao đủ', 'NV02', 'SP04'), -- PN04
-	('DDH05', '2024-08-01', 200, 200, N'Đã giao đủ', 'NV02', 'SP05'),
-	('DDH06', '2024-08-10', 80, 20, N'Đã giao một phần', 'NV02', 'SP06'),
-	('DDH07', '2024-09-01', 150, 150, N'Đã giao đủ', 'NV02', 'SP07'),      -- Fix: Đã nhập đủ ở PN05	
-	('DDH08', '2024-09-10', 30, 30, N'Đã giao đủ', 'NV02', 'SP08'),
-	('DDH09', '2024-10-01', 120, 120, N'Đã giao đủ', 'NV02', 'SP09'),      -- Fix: Đã nhập đủ ở PN07	
-	('DDH10', '2024-10-15', 60, 60, N'Đã giao đủ', 'NV02', 'SP10'),
-	('DDH11', '2024-11-10', 120, 60, N'Đã giao một phần', 'NV02', 'SP11'); -- Fix: Đặt 120, PN09 mới nhập 60 -> Giao 1 phần
+INSERT INTO DONDATHANG (MAHD, NGAYLAP, SOLUONGDAT, SOLUONGDANHAN, TRANGTHAI, MANV, MASP) VALUES 
+('DDH01', '2024-05-01', 200, 200, N'Đã giao đủ', 'NV02', 'SP01'),
+('DDH02', '2024-06-01', 100, 0, N'Chưa giao', 'NV02', 'SP02'),
+('DDH03', '2024-07-01', 100, 100, N'Đã giao đủ', 'NV02', 'SP03'),
+('DDH04', '2024-07-05', 50, 50, N'Đã giao đủ', 'NV02', 'SP04'),
+('DDH05', '2024-08-01', 200, 200, N'Đã giao đủ', 'NV02', 'SP05'),
+('DDH06', '2024-08-10', 80, 80, N'Đã giao đủ', 'NV02', 'SP06'),
+('DDH07', '2024-09-01', 150, 150, N'Đã giao đủ', 'NV02', 'SP07'),
+('DDH08', '2024-09-10', 30, 30, N'Đã giao đủ', 'NV02', 'SP08'),
+('DDH09', '2024-10-01', 120, 120, N'Đã giao đủ', 'NV02', 'SP09'),
+('DDH10', '2024-10-15', 60, 60, N'Đã giao đủ', 'NV02', 'SP10'),
+('DDH11', '2024-11-10', 120, 60, N'Đã giao một phần', 'NV02', 'SP11'),
+('DDH12', '2024-11-15', 100, 100, N'Đã giao đủ', 'NV02', 'SP40');
 GO
 
 -- 14. BẢNG PHIEUNHAPHANG (Phụ thuộc: NHASANXUAT)
@@ -323,7 +322,8 @@ VALUES
 	('DDH08', 'PN06', 30),
 	('DDH09', 'PN07', 120),
 	('DDH10', 'PN08', 60),
-	('DDH11', 'PN09', 60);
+	('DDH11', 'PN09', 60),
+	('DDH12', 'PN10', 100);
 GO
 
 -- 16. BẢNG HOADON (Phụ thuộc: NHANVIEN, PHIEUGIAMGIA, KHACHHANG)
